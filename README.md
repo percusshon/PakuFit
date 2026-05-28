@@ -5,7 +5,8 @@ PakuFit は食事の写真・テキスト記録をサポートし、カロリー
 ## 開発ステータス
 
 - Phase 1: Next.js + Supabaseの設計スキャフォールド（完了）
-- Phase 2: Supabase Auth + 初期DB migration + RLS土台（このリポジトリで実装中）
+- Phase 2: Supabase Auth + 初期DB migration + RLS土台（完了）
+- Phase 2.5: Supabase local RLS検証（完了）
 
 ## 重要な方針
 
@@ -27,6 +28,16 @@ npm run dev
 npm run lint
 npm run typecheck
 npm run build
+npm run lint
+npm run typecheck
+
+## Supabase ローカル検証
+
+```bash
+supabase start
+supabase db reset
+supabase test db
+```
 ```
 
 ## 環境変数（`.env.example`）

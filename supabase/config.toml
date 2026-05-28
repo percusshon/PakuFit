@@ -2,11 +2,25 @@ project_id = "pakufit-local"
 
 [api]
 enabled = true
+port = 55433
 schemas = ["public", "storage", "graphql_public"]
 
 [db]
-port = 54322
-major_version = 15
+port = 55432
+shadow_port = 55431
+major_version = 17
+
+[studio]
+enabled = true
+port = 55434
+
+[inbucket]
+enabled = true
+port = 55435
+
+[analytics]
+enabled = true
+port = 55436
 
 [auth]
 enable_signup = true

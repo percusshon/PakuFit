@@ -215,152 +215,152 @@ alter table public.partner_stores enable row level security;
 alter table public.audit_logs enable row level security;
 
 -- profiles
-create policy if not exists "profiles_select_own"
+create policy "profiles_select_own"
   on public.profiles for select
   using (auth.uid() = id);
 
-create policy if not exists "profiles_update_own"
+create policy "profiles_update_own"
   on public.profiles for update
   using (auth.uid() = id)
   with check (auth.uid() = id);
 
-create policy if not exists "profiles_insert_own"
+create policy "profiles_insert_own"
   on public.profiles for insert
   with check (auth.uid() = id);
 
 -- user_goals
-create policy if not exists "user_goals_select_own"
+create policy "user_goals_select_own"
   on public.user_goals for select
   using (auth.uid() = user_id);
 
-create policy if not exists "user_goals_insert_own"
+create policy "user_goals_insert_own"
   on public.user_goals for insert
   with check (auth.uid() = user_id);
 
-create policy if not exists "user_goals_update_own"
+create policy "user_goals_update_own"
   on public.user_goals for update
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
-create policy if not exists "user_goals_delete_own"
+create policy "user_goals_delete_own"
   on public.user_goals for delete
   using (auth.uid() = user_id);
 
 -- meal_entries
-create policy if not exists "meal_entries_select_own"
+create policy "meal_entries_select_own"
   on public.meal_entries for select
   using (auth.uid() = user_id);
 
-create policy if not exists "meal_entries_insert_own"
+create policy "meal_entries_insert_own"
   on public.meal_entries for insert
   with check (auth.uid() = user_id);
 
-create policy if not exists "meal_entries_update_own"
+create policy "meal_entries_update_own"
   on public.meal_entries for update
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
-create policy if not exists "meal_entries_delete_own"
+create policy "meal_entries_delete_own"
   on public.meal_entries for delete
   using (auth.uid() = user_id);
 
 -- meal_photos
-create policy if not exists "meal_photos_select_own"
+create policy "meal_photos_select_own"
   on public.meal_photos for select
   using (auth.uid() = user_id);
 
-create policy if not exists "meal_photos_insert_own"
+create policy "meal_photos_insert_own"
   on public.meal_photos for insert
   with check (auth.uid() = user_id);
 
-create policy if not exists "meal_photos_update_own"
+create policy "meal_photos_update_own"
   on public.meal_photos for update
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
-create policy if not exists "meal_photos_delete_own"
+create policy "meal_photos_delete_own"
   on public.meal_photos for delete
   using (auth.uid() = user_id);
 
 -- food_items
-create policy if not exists "food_items_select_own"
+create policy "food_items_select_own"
   on public.food_items for select
   using (auth.uid() = user_id);
 
-create policy if not exists "food_items_insert_own"
+create policy "food_items_insert_own"
   on public.food_items for insert
   with check (auth.uid() = user_id);
 
-create policy if not exists "food_items_update_own"
+create policy "food_items_update_own"
   on public.food_items for update
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
-create policy if not exists "food_items_delete_own"
+create policy "food_items_delete_own"
   on public.food_items for delete
   using (auth.uid() = user_id);
 
 -- nutrition_estimates
-create policy if not exists "nutrition_estimates_select_own"
+create policy "nutrition_estimates_select_own"
   on public.nutrition_estimates for select
   using (auth.uid() = user_id);
 
-create policy if not exists "nutrition_estimates_insert_own"
+create policy "nutrition_estimates_insert_own"
   on public.nutrition_estimates for insert
   with check (auth.uid() = user_id);
 
-create policy if not exists "nutrition_estimates_update_own"
+create policy "nutrition_estimates_update_own"
   on public.nutrition_estimates for update
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
-create policy if not exists "nutrition_estimates_delete_own"
+create policy "nutrition_estimates_delete_own"
   on public.nutrition_estimates for delete
   using (auth.uid() = user_id);
 
 -- daily_nutrition_summaries
-create policy if not exists "daily_summaries_select_own"
+create policy "daily_summaries_select_own"
   on public.daily_nutrition_summaries for select
   using (auth.uid() = user_id);
 
-create policy if not exists "daily_summaries_insert_own"
+create policy "daily_summaries_insert_own"
   on public.daily_nutrition_summaries for insert
   with check (auth.uid() = user_id);
 
-create policy if not exists "daily_summaries_update_own"
+create policy "daily_summaries_update_own"
   on public.daily_nutrition_summaries for update
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
-create policy if not exists "daily_summaries_delete_own"
+create policy "daily_summaries_delete_own"
   on public.daily_nutrition_summaries for delete
   using (auth.uid() = user_id);
 
 -- meal_recommendations
-create policy if not exists "meal_recommendations_select_own"
+create policy "meal_recommendations_select_own"
   on public.meal_recommendations for select
   using (auth.uid() = user_id);
 
-create policy if not exists "meal_recommendations_insert_own"
+create policy "meal_recommendations_insert_own"
   on public.meal_recommendations for insert
   with check (auth.uid() = user_id);
 
-create policy if not exists "meal_recommendations_update_own"
+create policy "meal_recommendations_update_own"
   on public.meal_recommendations for update
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
-create policy if not exists "meal_recommendations_delete_own"
+create policy "meal_recommendations_delete_own"
   on public.meal_recommendations for delete
   using (auth.uid() = user_id);
 
 -- partner_products / partner_stores: 読み取り専用に限定（service_role前提を想定しない安全設計）
-create policy if not exists "partner_products_select_authenticated"
+create policy "partner_products_select_authenticated"
   on public.partner_products for select
   to authenticated
   using (true);
 
-create policy if not exists "partner_stores_select_authenticated"
+create policy "partner_stores_select_authenticated"
   on public.partner_stores for select
   to authenticated
   using (true);

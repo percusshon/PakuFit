@@ -59,3 +59,31 @@
 - カロリー/PFCは「概算」として扱う。
 - 記録・提案は「次の食事候補」「参考情報」として表示。
 - 医療的な断定表現は表示しない。
+
+## ローカルRLS検証（Phase 2.5）
+
+- 実行コマンド:
+  - `supabase start`
+  - `supabase db reset`
+  - `supabase test db`
+- 初回は `supabase start` が長時間停止し、既存の他プロジェクトコンテナとのポート競合を回避するため、
+  `supabase/config.toml` のポートをPakuFit専用（`5432`系を避けた）に変更。
+- migrationは `policy` 文で `IF NOT EXISTS` を使用していたため、`supabase db reset` 時に構文エラーが発生したため除去。
+- `supabase/tests/rls_access_tests.sql` を pgTAP 形式に更新し、`plan` を定義して `supabase test db` に適合させた。
+- テスト内容:
+  - `meal_entries` の本人読取/他人不可
+  - `user_goals` の本人更新可/他人更新不可
+  - `partner_products` `insert/update/delete` の一般ユーザー拒否
+  - `partner_stores` `insert/update/delete` の一般ユーザー拒否
+  - `audit_logs` の `select/update/delete` 拒否
+- `supabase/tests/rls_access_tests.sql` では JWT クレームを `request.jwt.claims` にセットし、
+  `public.set_test_jwt()` で `authenticated` コンテキストを再現。
+- `supabase/seed/rls_test_seed.sql` に `auth.users` の固定IDを含む最小ダミーデータを追加し、
+  FK制約を満たしたテーブル参照を前提にしたテストを実行可能にした。
+
+### 変更点の要約
+
+- `supabase/seed/rls_test_seed.sql`: テストユーザー、食事、目標、パートナー候補、auditログをダミー登録。
+- `supabase/tests/rls_access_tests.sql`: pgTAP化、拒否ケースを `throws_ok` で明示化。
+- `supabase/config.toml`: ローカル起動時のポートをPakuFit用に調整。
+- service_roleキーや実データを使わず、`public anon key` 前提の検証のみを実施。
