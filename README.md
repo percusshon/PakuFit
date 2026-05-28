@@ -16,6 +16,7 @@ PakuFit は食事記録をサポートするためのMVPアプリです。
 - Phase 6: user_goalsを推薦へ反映
 - Phase 7: 次の食事候補履歴MVP（保存・履歴表示）
 - Phase 7.5: 推薦保存フロー検証（重複保存抑制）
+- Phase 8: サマリー読み取りガイドMVP
 
 ## 主要ポリシー
 
@@ -135,6 +136,22 @@ supabase test db
 - 成果表示は `/recommendations/history` で `status=saved` / `status=already_saved` / `error=save_failed` を確認。
 - `npm run dev` 起動時に未ログインの `/recommendations/history` でログイン画面への誘導、履歴保存導線を確認。
 - `source=rule_based` の保存済み参考候補として扱い、保存しない情報（個別写真/自由記述/体重/診断的表現）を明示。
+
+Phase8（サマリー読み取りガイド）:
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+npm run test
+supabase test db
+```
+
+- `/summary` に目標別の読み取りガイドを追加。
+- 目標未設定時に `/settings/goals` への導線を明示。
+- `getTodayMealSummary` と `getCurrentUserGoal` から、データ充足度と注意点を表示。
+- `/summary` から `/recommendations` / `/recommendations/history` / `/settings/goals` への導線を整理。
+- `source` や診断文脈の強い表現を避け、一般的な食事管理の参考情報として表示。
 
 ## 検証時の補足
 

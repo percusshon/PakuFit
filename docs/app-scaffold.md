@@ -93,3 +93,10 @@
 - `/recommendations` の保存アクションを更新し、同一ユーザー同一日同一候補の重複保存をサーバー側で抑制。
 - 保存結果を `/recommendations/history` 側で `saved` / `already_saved` / `save_failed` のステータス表示に反映。
 - `/recommendations/history` は本人の履歴一覧に加え、保存結果メッセージを表示するよう更新。
+
+## Phase 8（サマリー読み取りガイドMVP）
+
+- `/summary` へ目標別の読み取りガイド（目標未設定案内、データ充足度、PFC入力不足時の注意）を表示。
+- `lib/summary/calculate-summary-guide.ts` を追加し、`/summary` の表示ロジックと分離。
+- `/summary` から `/recommendations` / `/recommendations/history` / `/settings/goals` への導線を整備。
+- DB変更なしで、`getTodayMealSummary` と `getCurrentUserGoal` の既存取得データを参照。
