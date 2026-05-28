@@ -1,37 +1,25 @@
-import { NutritionEstimate, EstimatedFood } from "./nutrition";
-
-export type FoodSource = "user" | "ai";
-
-export type ServingUnit = "g" | "ml" | "cup" | "serving" | "piece" | "dish";
-
-export type MealTimeSlot = "morning" | "lunch" | "dinner" | "late";
-
-export type MealFoodItem = {
-  id: string;
-  name: string;
-  normalizedName: string;
-  quantity: number;
-  unit: ServingUnit;
-  cookingMethod: string;
-  eatenRatio: number;
-  source: FoodSource;
-  estimated: EstimatedFood;
-};
+export type MealType = "breakfast" | "lunch" | "dinner" | "snack" | "other";
 
 export type MealEntry = {
   id: string;
-  date: string;
-  slot: MealTimeSlot;
-  note: string;
-  foods: MealFoodItem[];
-  totalNutrition: NutritionEstimate;
-  correctionMemo: string;
-  source: "photo" | "text";
+  user_id: string;
+  meal_type: MealType;
+  eaten_at: string;
+  title: string;
+  description: string | null;
+  estimated_calories: number | null;
+  portion_note: string | null;
+  preparation_note: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
-export type CreateMealInput = {
-  date: string;
-  slot: MealTimeSlot;
-  note: string;
-  foods: MealFoodItem[];
+export type CreateMealEntryInput = {
+  meal_type: MealType;
+  eaten_at?: string;
+  title: string;
+  description?: string | null;
+  estimated_calories?: number | null;
+  portion_note?: string | null;
+  preparation_note?: string | null;
 };

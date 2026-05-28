@@ -37,3 +37,16 @@
 - DB migration + RLS土台
   - `supabase/migrations/0001_initial_schema.sql` 追加
   - `supabase/tests/rls_access_tests.sql` / `supabase/seed/rls_test_seed.sql` 追加
+
+## Phase 3（食事登録MVP）
+
+- 食事保存MVP（`meal_entries`）を実装し、本人データだけを一覧/保存・集計へ接続
+- 追加・更新ファイル
+  - `lib/meals/actions.ts`（Server Action `createMealEntry`）
+  - `lib/meals/queries.ts`（`getRecentMealEntries`, `getTodayMealSummary`）
+  - `app/meals/page.tsx`（本人の食事一覧）
+  - `app/meals/new/page.tsx`（食事登録フォーム）
+  - `app/summary/page.tsx`（本日件数と概算カロリー）
+- 追加migration
+  - `supabase/migrations/0002_meal_entry_mvp.sql`（`meal_type` などMVPフィールド）
+- `/recommendations` は表示文言を、記録ベースの候補設計前提に更新
