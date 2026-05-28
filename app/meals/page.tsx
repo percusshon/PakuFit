@@ -1,8 +1,8 @@
-import Link from 'next/link'
+import Link from 'next/link';
 
-import { getRecentMealEntries } from '@/lib/meals/queries'
-import { requireAuthUser } from '@/lib/supabase/server'
-import { PageContainer } from '@/components/page-container'
+import { getRecentMealEntries } from '@/lib/meals/queries';
+import { requireAuthUser } from '@/lib/supabase/server';
+import { PageContainer } from '@/components/page-container';
 
 const mealTypeLabel: Record<string, string> = {
   breakfast: '朝食',
@@ -10,21 +10,29 @@ const mealTypeLabel: Record<string, string> = {
   dinner: '夕食',
   snack: '軽食',
   other: 'その他',
-}
+};
+
+const formatNutritionValue = (value: number | null) => {
+  if (value === null) return '未入力';
+  return `${value} g`;
+};
 
 export default async function MealsPage() {
-  const user = await requireAuthUser('/login')
-  const meals = await getRecentMealEntries()
+  const user = await requireAuthUser('/login');
+  const meals = await getRecentMealEntries();
 
   return (
     <PageContainer title="食事記録一覧" description={`ログイン中: ${user.email ?? 'ユーザー'}`}>
       <section className="space-y-4">
         <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          食事名・時間帯・概算カロリーを本人データとして保存し、一覧で確認できます。カロリーは概算として扱います。
+          食事名・時間帯・概算カロリーを本人データとして保存し、一覧で確認できます。カロリー/PFCは概算の入力値です。
         </div>
 
         <div className="flex items-center gap-3">
-          <Link href="/meals/new" className="rounded-full bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700">
+          <Link
+            href="/meals/new"
+            className="rounded-full bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700"
+          >
             新しく記録する
           </Link>
           <Link
@@ -55,7 +63,17 @@ export default async function MealsPage() {
                 <p className="mt-2 text-sm text-slate-700">
                   カロリー（概算）: {meal.estimated_calories !== null ? `${meal.estimated_calories} kcal` : '未入力'}
                 </p>
-                <p className="text-sm text-slate-600">
+
+                <p className="mt-2 text-sm font-medium text-slate-900">概算PFC（ユーザー入力値）</p>
+                <ul className="mt-1 text-sm text-slate-700">
+                  <li>たんぱく質: {formatNutritionValue(meal.estimated_protein_g)}</li>
+                  <li>脂質: {formatNutritionValue(meal.estimated_fat_g)}</li>
+                  <li>炭水化物: {formatNutritionValue(meal.estimated_carbs_g)}</li>
+                  <li>食物繊維: {formatNutritionValue(meal.estimated_fiber_g)}</li>
+                  <li>食塩相当量: {meal.estimated_salt_g === null ? '未入力' : `${meal.estimated_salt_g} g`}</li>
+                </ul>
+
+                <p className="mt-2 text-sm text-slate-600">
                   メモの有無: {meal.description || meal.portion_note || meal.preparation_note ? 'あり' : 'なし'}
                 </p>
                 {meal.portion_note ? <p className="mt-1 text-sm text-slate-600">量メモ: {meal.portion_note}</p> : null}
@@ -68,5 +86,5 @@ export default async function MealsPage() {
         ) : null}
       </section>
     </PageContainer>
-  )
+  );
 }

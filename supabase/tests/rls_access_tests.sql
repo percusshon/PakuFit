@@ -38,6 +38,12 @@ VALUES
   ('11111111-1111-1111-1111-111111111102', :'USER_B_ID'::uuid, 'Dinner sample', 'manual', 670, 32, 24, 74)
 ON CONFLICT (id) DO NOTHING;
 
+INSERT INTO public.nutrition_estimates (id, user_id, meal_entry_id, estimate_method, estimated_calories, estimated_protein_g, estimated_fat_g, estimated_carbs_g, estimated_fiber_g, estimated_salt_g)
+VALUES
+  ('00000000-0000-0000-0000-000000000101', :'USER_A_ID'::uuid, '11111111-1111-1111-1111-111111111101', 'manual', 520, 28, 18, 61, 2.5, 1.1),
+  ('00000000-0000-0000-0000-000000000102', :'USER_B_ID'::uuid, '11111111-1111-1111-1111-111111111102', 'manual', 670, 32, 24, 74, 4.2, 1.8)
+ON CONFLICT (id) DO NOTHING;
+
 INSERT INTO public.user_goals (user_id, goal_category, target_calories_per_day, target_protein_g, target_fat_g, target_carbs_g)
 VALUES
   (:'USER_A_ID'::uuid, 'weight_management', 1800, 95, 55, 210),
@@ -59,7 +65,7 @@ VALUES
   ('00000000-0000-0000-0000-000000000031', :'USER_A_ID'::uuid, 'seed', 'meal_entries', '11111111-1111-1111-1111-111111111101'::uuid, '{"source":"seed"}'::jsonb)
 ON CONFLICT (id) DO NOTHING;
 
-select plan(13);
+select plan(22);
 
 select public.set_test_jwt(:'USER_A_ID'::uuid);
 set role authenticated;
@@ -190,5 +196,96 @@ select is(
   1,
   'user A はaudit_logsをdeleteできない'
 );
+
+-- 14) user A は自分のnutrition_estimatesを読める
+select is(
+  (select count(*)::int from public.nutrition_estimates where user_id = :'USER_A_ID'::uuid),
+  1,
+  'user A は自分のnutrition_estimatesを読める'
+);
+
+-- 15) user A は自分のnutrition_estimatesをinsertできる
+insert into public.nutrition_estimates
+  (id, user_id, meal_entry_id, estimate_method, estimated_protein_g, estimated_fat_g, estimated_carbs_g)
+values
+  ('00000000-0000-0000-0000-000000000103', :'USER_A_ID'::uuid, '11111111-1111-1111-1111-111111111101', 'manual', 12.0, 8.0, 30.0);
+select is(
+  (select count(*)::int from public.nutrition_estimates where id = '00000000-0000-0000-0000-000000000103'),
+  1,
+  'user A はnutrition_estimatesをinsertできる'
+);
+
+-- 16) user A は自分のnutrition_estimatesをupdateできる
+update public.nutrition_estimates
+set estimated_fiber_g = 3.5
+where id = '00000000-0000-0000-0000-000000000103';
+select is(
+  (select estimated_fiber_g::text from public.nutrition_estimates where id = '00000000-0000-0000-0000-000000000103'),
+  '3.50',
+  'user A はnutrition_estimatesをupdateできる'
+);
+
+-- 17) user A は自分のnutrition_estimatesをdeleteできる
+delete from public.nutrition_estimates
+where id = '00000000-0000-0000-0000-000000000103';
+select is(
+  (select count(*)::int from public.nutrition_estimates where id = '00000000-0000-0000-0000-000000000103'),
+  0,
+  'user A はnutrition_estimatesをdeleteできる'
+);
+
+-- 18) user A はuser Bのnutrition_estimatesを読めない
+set role authenticated;
+select is(
+  (select count(*)::int from public.nutrition_estimates where user_id = :'USER_B_ID'::uuid),
+  0,
+  'user A はuser Bのnutrition_estimatesを読めない'
+);
+
+-- 19) user A はuser Bのnutrition_estimatesをinsertできない
+select is(
+  (select count(*)::int from public.nutrition_estimates where id = '00000000-0000-0000-0000-000000000104'::uuid),
+  0,
+  'user A はuser Bのnutrition_estimatesをinsertしていない'
+);
+do $$
+begin
+  begin
+    insert into public.nutrition_estimates (id, user_id, meal_entry_id, estimate_method, estimated_protein_g)
+      values ('00000000-0000-0000-0000-000000000104', '00000000-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111102', 'manual', 10);
+  exception
+    when insufficient_privilege then
+      null;
+  end;
+end $$;
+select is(
+  (select count(*)::int from public.nutrition_estimates where id = '00000000-0000-0000-0000-000000000104'::uuid),
+  0,
+  'user A はuser Bのnutrition_estimatesをinsertできない'
+);
+
+-- 20) user A はuser Bのnutrition_estimatesをupdateできない
+set role authenticated;
+update public.nutrition_estimates
+set estimated_fat_g = 99
+where id = '00000000-0000-0000-0000-000000000102'::uuid;
+set role postgres;
+select is(
+  (select estimated_fat_g::numeric(8,2) from public.nutrition_estimates where id = '00000000-0000-0000-0000-000000000102'::uuid),
+  24.00::numeric(8,2),
+  'user A はuser Bのnutrition_estimatesをupdateできない'
+);
+set role authenticated;
+
+-- 21) user A はuser Bのnutrition_estimatesをdeleteできない
+delete from public.nutrition_estimates
+where id = '00000000-0000-0000-0000-000000000102';
+set role postgres;
+select is(
+  (select count(*)::int from public.nutrition_estimates where id = '00000000-0000-0000-0000-000000000102'),
+  1,
+  'user A はuser Bのnutrition_estimatesをdeleteできない'
+);
+set role authenticated;
 
 select * from finish();

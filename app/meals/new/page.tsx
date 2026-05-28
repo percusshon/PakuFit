@@ -1,43 +1,46 @@
-import { createMealEntry } from '@/lib/meals/actions'
-import { requireAuthUser } from '@/lib/supabase/server'
-import { PageContainer } from '@/components/page-container'
+import { createMealEntry } from '@/lib/meals/actions';
+import { requireAuthUser } from '@/lib/supabase/server';
+import { PageContainer } from '@/components/page-container';
 
 const toDateTimeLocalValue = () => {
-  const now = new Date()
-  const offsetMinute = now.getTimezoneOffset()
-  const local = new Date(now.getTime() - offsetMinute * 60 * 1000)
-  return local.toISOString().slice(0, 16)
-}
+  const now = new Date();
+  const offsetMinute = now.getTimezoneOffset();
+  const local = new Date(now.getTime() - offsetMinute * 60 * 1000);
+  return local.toISOString().slice(0, 16);
+};
+
+const numberInputHint = '数値は0以上で入力してください。未入力は空欄でOKです。';
 
 export default async function NewMealPage({
   searchParams,
 }: {
-  searchParams: { error?: string }
+  searchParams: { error?: string };
 }) {
-  const user = await requireAuthUser('/login')
+  const user = await requireAuthUser('/login');
 
-  const error = searchParams.error
+  const error = searchParams.error;
 
   return (
     <PageContainer title="食事を記録する" description={`ログイン中: ${user.email ?? 'ユーザー'}`}>
       <div className="space-y-5">
         <p className="rounded-md border border-amber-200 bg-white p-4 text-sm text-amber-800">
           写真アップロード、AI推定、バーコード連携は今後追加予定です。今は
-          「食事名」と「概算カロリー」を中心に記録し、後続の候補表示で活用します。
+          「食事名」「概算カロリー」「概算PFC」を中心に記録し、後続の候補表示で活用します。
         </p>
 
         {error === 'empty_title' && (
           <div className="rounded-lg bg-rose-50 p-4 text-sm text-rose-700">食事名は必須です。</div>
         )}
-        {error === 'invalid_meal_type' && (
-          <div className="rounded-lg bg-rose-50 p-4 text-sm text-rose-700">食事区分が不正です。</div>
-        )}
-        {error === 'invalid_eaten_at' && (
-          <div className="rounded-lg bg-rose-50 p-4 text-sm text-rose-700">食べた日時が不正です。</div>
-        )}
+        {error === 'invalid_meal_type' && <div className="rounded-lg bg-rose-50 p-4 text-sm text-rose-700">食事区分が不正です。</div>}
+        {error === 'invalid_eaten_at' && <div className="rounded-lg bg-rose-50 p-4 text-sm text-rose-700">食べた日時が不正です。</div>}
         {error === 'invalid_calories' && (
           <div className="rounded-lg bg-rose-50 p-4 text-sm text-rose-700">カロリーは0〜5000の範囲で入力してください。</div>
         )}
+        {error === 'invalid_protein' && <div className="rounded-lg bg-rose-50 p-4 text-sm text-rose-700">たんぱく質は0〜500gで入力してください。</div>}
+        {error === 'invalid_fat' && <div className="rounded-lg bg-rose-50 p-4 text-sm text-rose-700">脂質は0〜500gで入力してください。</div>}
+        {error === 'invalid_carbs' && <div className="rounded-lg bg-rose-50 p-4 text-sm text-rose-700">炭水化物は0〜500gで入力してください。</div>}
+        {error === 'invalid_fiber' && <div className="rounded-lg bg-rose-50 p-4 text-sm text-rose-700">食物繊維は0〜100gで入力してください。</div>}
+        {error === 'invalid_salt' && <div className="rounded-lg bg-rose-50 p-4 text-sm text-rose-700">食塩相当量は0〜50gで入力してください。</div>}
         {error === 'save_failed' && (
           <div className="rounded-lg bg-rose-50 p-4 text-sm text-rose-700">
             保存に失敗しました。接続状況を確認して再度お試しください。
@@ -96,19 +99,99 @@ export default async function NewMealPage({
             />
           </label>
 
-          <label className="block text-sm font-medium text-amber-900" htmlFor="estimated_calories">
-            概算カロリー（kcal）
-            <input
-              id="estimated_calories"
-              name="estimated_calories"
-              type="number"
-              min={0}
-              max={5000}
-              placeholder="未確定の場合は空欄"
-              className="mt-1 w-full rounded-md border border-amber-200 px-3 py-2"
-            />
-            <p className="mt-1 text-xs text-slate-600">カロリーは概算です。最終値はユーザー確認が必要です。</p>
-          </label>
+          <fieldset className="space-y-3 rounded-md border border-slate-200 bg-amber-50 p-3">
+            <legend className="mx-auto px-2 text-sm font-semibold text-slate-900">概算（任意）</legend>
+
+            <label className="block text-sm font-medium text-amber-900" htmlFor="estimated_calories">
+              カロリー（kcal）
+              <input
+                id="estimated_calories"
+                name="estimated_calories"
+                type="number"
+                min={0}
+                max={5000}
+                step="1"
+                placeholder="未確定の場合は空欄"
+                className="mt-1 w-full rounded-md border border-amber-200 px-3 py-2"
+              />
+              <p className="mt-1 text-xs text-slate-600">概算です。ユーザー確認が必要です。</p>
+            </label>
+
+            <label className="block text-sm font-medium text-amber-900" htmlFor="estimated_protein_g">
+              たんぱく質（g）
+              <input
+                id="estimated_protein_g"
+                name="estimated_protein_g"
+                type="number"
+                min={0}
+                max={500}
+                step="0.1"
+                placeholder="任意"
+                className="mt-1 w-full rounded-md border border-amber-200 px-3 py-2"
+              />
+              <p className="mt-1 text-xs text-slate-600">{numberInputHint}</p>
+            </label>
+
+            <label className="block text-sm font-medium text-amber-900" htmlFor="estimated_fat_g">
+              脂質（g）
+              <input
+                id="estimated_fat_g"
+                name="estimated_fat_g"
+                type="number"
+                min={0}
+                max={500}
+                step="0.1"
+                placeholder="任意"
+                className="mt-1 w-full rounded-md border border-amber-200 px-3 py-2"
+              />
+              <p className="mt-1 text-xs text-slate-600">{numberInputHint}</p>
+            </label>
+
+            <label className="block text-sm font-medium text-amber-900" htmlFor="estimated_carbs_g">
+              炭水化物（g）
+              <input
+                id="estimated_carbs_g"
+                name="estimated_carbs_g"
+                type="number"
+                min={0}
+                max={500}
+                step="0.1"
+                placeholder="任意"
+                className="mt-1 w-full rounded-md border border-amber-200 px-3 py-2"
+              />
+              <p className="mt-1 text-xs text-slate-600">{numberInputHint}</p>
+            </label>
+
+            <label className="block text-sm font-medium text-amber-900" htmlFor="estimated_fiber_g">
+              食物繊維（g）
+              <input
+                id="estimated_fiber_g"
+                name="estimated_fiber_g"
+                type="number"
+                min={0}
+                max={100}
+                step="0.1"
+                placeholder="任意"
+                className="mt-1 w-full rounded-md border border-amber-200 px-3 py-2"
+              />
+              <p className="mt-1 text-xs text-slate-600">{numberInputHint}</p>
+            </label>
+
+            <label className="block text-sm font-medium text-amber-900" htmlFor="estimated_salt_g">
+              食塩相当量（g）
+              <input
+                id="estimated_salt_g"
+                name="estimated_salt_g"
+                type="number"
+                min={0}
+                max={50}
+                step="0.1"
+                placeholder="任意"
+                className="mt-1 w-full rounded-md border border-amber-200 px-3 py-2"
+              />
+              <p className="mt-1 text-xs text-slate-600">{numberInputHint}</p>
+            </label>
+          </fieldset>
 
           <label className="block text-sm font-medium text-amber-900" htmlFor="portion_note">
             食べた量メモ
@@ -145,5 +228,5 @@ export default async function NewMealPage({
         </form>
       </div>
     </PageContainer>
-  )
+  );
 }

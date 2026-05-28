@@ -8,6 +8,11 @@ export type MealEntry = {
   title: string;
   description: string | null;
   estimated_calories: number | null;
+  estimated_protein_g: number | null;
+  estimated_fat_g: number | null;
+  estimated_carbs_g: number | null;
+  estimated_fiber_g: number | null;
+  estimated_salt_g: number | null;
   portion_note: string | null;
   preparation_note: string | null;
   created_at: string;
@@ -20,6 +25,11 @@ export type CreateMealEntryInput = {
   title: string;
   description?: string | null;
   estimated_calories?: number | null;
+  estimated_protein_g?: number | null;
+  estimated_fat_g?: number | null;
+  estimated_carbs_g?: number | null;
+  estimated_fiber_g?: number | null;
+  estimated_salt_g?: number | null;
   portion_note?: string | null;
   preparation_note?: string | null;
 };

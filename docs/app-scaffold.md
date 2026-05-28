@@ -50,3 +50,13 @@
 - 追加migration
   - `supabase/migrations/0002_meal_entry_mvp.sql`（`meal_type` などMVPフィールド）
 - `/recommendations` は表示文言を、記録ベースの候補設計前提に更新
+
+## Phase 4（PFC/栄養概算入力MVP）
+
+- `/meals/new` にPFC任意入力欄を追加（たんぱく質/脂質/炭水化物/食物繊維/食塩相当量）
+- 保存時は `meal_entries` に加えて `nutrition_estimates` へ関連レコードを保存
+- `/meals` に概算PFCを表示
+- `/summary` に本日PFC合計を追加表示
+- 新規migration
+  - `supabase/migrations/0003_nutrition_estimate_mvp.sql`（`nutrition_estimates` のPFC拡張）
+- RLSテストを `nutrition_estimates` 操作観点で拡張

@@ -10,6 +10,7 @@ PakuFit は食事記録をサポートするためのMVPアプリです。
 - Phase 2: Auth / RLS土台
 - Phase 2.5: Supabase local RLS検証
 - Phase 3: 食事登録MVP（本登録、一覧、当日サマリー）
+- Phase 4: PFC/栄養概算入力MVP
 
 ## 主要ポリシー
 
@@ -41,7 +42,7 @@ npm run typecheck
 npm run build
 ```
 
-Phase3の食事保存フローを検証する場合:
+Phase3の食事保存フロー検証:
 
 ```bash
 supabase start
@@ -52,10 +53,22 @@ npm run typecheck
 npm run build
 ```
 
+Phase4のPFC入力MVP検証:
+
+```bash
+supabase start
+supabase db reset   # migrations 0001/0002/0003 が適用されること
+supabase test db    # nutrition_estimates のRLSを含むテスト
+npm run lint
+npm run typecheck
+npm run build
+```
+
 ## 検証時の補足
 
 - `supabase test db` はローカルDB起動後に実行します。
 - `.env.local` は Git 管理対象外です（`.gitignore` で除外）。
+- Supabase Local 環境が未起動の場合、`test db` も `db reset` も失敗するため先に `supabase start` が必要です。
 - `service_role` の利用は想定せず、`requireAuthUser` と RLS 前提で実装します。
 
 ## フォルダ構成（抜粋）
@@ -68,10 +81,11 @@ npm run build
 - `supabase/migrations/`: DB定義
 - `docs/`: 設計・RLS・進捗
 
-## Phase3での保存対象
+## Phase4での保存対象
 
 - `/meals/new`: 食事フォーム（`meal_type` / `eaten_at` / `title` / `description` / `estimated_calories` / `portion_note` / `preparation_note`）
-- `/meals`: ログイン中ユーザーの最新50件を表示
-- `/summary`: 本日件数と概算カロリー合計を表示
+  - 追加: `estimated_protein_g` / `estimated_fat_g` / `estimated_carbs_g` / `estimated_fiber_g` / `estimated_salt_g`（任意）
+- `/meals`: 本人ログインユーザーの最新50件を表示
+- `/summary`: 本日件数、概算カロリー、概算たんぱく質/脂質/炭水化物合計、任意で食物繊維/食塩相当量を表示
 
-今後は写真アップロード、AI推定、バーコード/JANコード、PFC詳細自動計算、提携候補導線を拡張予定です。
+今後は写真アップロード、AI推定、バーコード/JANコード、PFC自動計算、提携候補導線を拡張予定です。
