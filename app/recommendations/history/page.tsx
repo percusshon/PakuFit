@@ -14,14 +14,39 @@ const goalLabelMap: Record<string, string> = {
   convenience_store_friendly: '外食/コンビニ中心でも整える',
 };
 
-export default async function RecommendationHistoryPage() {
+export default async function RecommendationHistoryPage({
+  searchParams,
+}: {
+  searchParams?: {
+    status?: string;
+    error?: string;
+  };
+}) {
   const user = await requireAuthUser('/login');
   const recommendations = await getSavedMealRecommendations();
   const goal = await getCurrentUserGoal();
+  const status = searchParams?.status;
+  const error = searchParams?.error;
 
   return (
     <PageContainer title="保存された候補履歴" description={`ログイン中: ${user.email ?? 'ユーザー'}`}>
       <div className="space-y-4">
+        {status === 'saved' ? (
+          <p className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+            固定ルールによる参考候補を保存しました。履歴に反映されています。
+          </p>
+        ) : null}
+        {status === 'already_saved' ? (
+          <p className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+            この候補は本日分としてすでに保存済みです。重複保存は行っていません。
+          </p>
+        ) : null}
+        {error === 'save_failed' ? (
+          <p className="rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+            保存処理に失敗しました。時間をおいて再試行してください。
+          </p>
+        ) : null}
+
         <p className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
           候補は固定ルールによる参考情報として保存されます。保存履歴は本人データのみ表示します。
         </p>

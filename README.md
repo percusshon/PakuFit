@@ -15,6 +15,7 @@ PakuFit は食事記録をサポートするためのMVPアプリです。
 - Phase 5.5: 固定ルール推薦ロジックの単体テスト追加
 - Phase 6: user_goalsを推薦へ反映
 - Phase 7: 次の食事候補履歴MVP（保存・履歴表示）
+- Phase 7.5: 推薦保存フロー検証（重複保存抑制）
 
 ## 主要ポリシー
 
@@ -118,6 +119,22 @@ supabase test db
 
 - `meal_recommendations` の保存前提で、履歴保存アクションと取得APIを検証。
 - 候補履歴は `source=rule_based` 固定の参考候補として扱い、医療・診断目的とはしない。
+
+Phase7.5（推薦履歴保存フロー検証）:
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+npm run test
+npm run dev
+supabase test db
+```
+
+- 固定ルール候補保存時に、同一ユーザー・同一日・同一候補キーの重複保存を抑制。
+- 成果表示は `/recommendations/history` で `status=saved` / `status=already_saved` / `error=save_failed` を確認。
+- `npm run dev` 起動時に未ログインの `/recommendations/history` でログイン画面への誘導、履歴保存導線を確認。
+- `source=rule_based` の保存済み参考候補として扱い、保存しない情報（個別写真/自由記述/体重/診断的表現）を明示。
 
 ## 検証時の補足
 

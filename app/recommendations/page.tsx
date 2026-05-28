@@ -16,14 +16,7 @@ const goalLabelMap: Record<UserGoalType, string> = {
   convenience_store_friendly: '外食/コンビニ中心でも整える',
 };
 
-export default async function RecommendationsPage({
-  searchParams,
-}: {
-  searchParams: {
-    saved?: string;
-    error?: string;
-  };
-}) {
+export default async function RecommendationsPage() {
   const user = await requireAuthUser('/login');
   const summary = await getTodayMealSummary();
   const currentGoal = await getCurrentUserGoal();
@@ -57,16 +50,6 @@ export default async function RecommendationsPage({
   return (
     <PageContainer title="次の食事候補" description={`ログイン中: ${user.email ?? 'ユーザー'}`}>
       <div className="space-y-3">
-        {searchParams?.saved === '1' && (
-          <p className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">保存しました。履歴で確認できます。</p>
-        )}
-        {searchParams?.error === 'save_recommendation_failed' && (
-          <p className="rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">保存に失敗しました。時間をおいて再試行してください。</p>
-        )}
-        {searchParams?.error === 'save_recommendation_invalid_input' && (
-          <p className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">保存内容を作成できませんでした。候補を再選択してください。</p>
-        )}
-
         <p className="rounded-md border border-amber-200 bg-white p-4 text-sm leading-6 text-amber-800">
           AI推薦ではなく、固定ルールによる一般的な食事管理の参考候補を表示しています。候補は指示ではありません。
         </p>
@@ -168,7 +151,7 @@ export default async function RecommendationsPage({
                         type="submit"
                         className="mt-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700"
                       >
-                        この候補を保存
+                        この参考候補を保存
                       </button>
                     </form>
                   </li>

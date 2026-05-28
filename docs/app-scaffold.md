@@ -87,3 +87,9 @@
 - `/recommendations` へ候補保存ボタンを追加し、保存後に履歴画面へ遷移可能に。
 - `/recommendations/history` を追加し、保存済み候補履歴一覧を実装。
 - `lib/types/recommendation.ts` を `SavedMealRecommendation` 系で拡張。
+
+## Phase 7.5（保存フロー検証と重複抑制）
+
+- `/recommendations` の保存アクションを更新し、同一ユーザー同一日同一候補の重複保存をサーバー側で抑制。
+- 保存結果を `/recommendations/history` 側で `saved` / `already_saved` / `save_failed` のステータス表示に反映。
+- `/recommendations/history` は本人の履歴一覧に加え、保存結果メッセージを表示するよう更新。

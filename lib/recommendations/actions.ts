@@ -11,6 +11,7 @@ import {
 
 const MAX_DESCRIPTION_LENGTH = 400;
 const MAX_CAUTION_LENGTH = 400;
+const RECOMMENDATION_SOURCE: RecommendationSource = 'rule_based';
 
 const clampText = (value: FormDataEntryValue | null, maxLength: number) => {
   if (typeof value !== 'string') {
@@ -61,7 +62,35 @@ const normalizeSource = (value: string | null): RecommendationSource => {
     return value;
   }
 
-  return 'rule_based';
+  return RECOMMENDATION_SOURCE;
+};
+
+const getRecommendationDate = () => {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC' }).format(new Date());
+};
+
+const hasDuplicateSavedRecommendation = async (
+  userId: string,
+  candidateKey: string,
+  recommendationDate: string,
+): Promise<boolean> => {
+  const supabase = createServerClientSafe();
+
+  const { data, error } = await supabase
+    .from('meal_recommendations')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('recommendation_date', recommendationDate)
+    .eq('candidate_key', candidateKey)
+    .eq('source', RECOMMENDATION_SOURCE)
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    return true;
+  }
+
+  return Boolean(data);
 };
 
 const parseInput = (formData: FormData): SaveMealRecommendationInput | null => {
@@ -112,13 +141,20 @@ export async function saveMealRecommendations(formData: FormData) {
   const parsed = parseInput(formData);
 
   if (!parsed) {
-    redirect('/recommendations?error=save_recommendation_invalid_input');
+    redirect('/recommendations/history?error=save_failed');
   }
 
   const supabase = createServerClientSafe();
+  const recommendationDate = getRecommendationDate();
+  const alreadySaved = await hasDuplicateSavedRecommendation(user.id, parsed.candidateKey, recommendationDate);
+
+  if (alreadySaved) {
+    redirect('/recommendations/history?status=already_saved');
+  }
+
   const { error } = await supabase.from('meal_recommendations').insert({
     user_id: user.id,
-    recommendation_date: new Date().toISOString().slice(0, 10),
+    recommendation_date: recommendationDate,
     recommendation_type: 'any',
     generated_at: new Date().toISOString(),
     goal_category: parsed.goalCategory,
@@ -134,8 +170,8 @@ export async function saveMealRecommendations(formData: FormData) {
   });
 
   if (error) {
-    redirect('/recommendations?error=save_recommendation_failed');
+    redirect('/recommendations/history?error=save_failed');
   }
 
-  redirect('/recommendations/history');
+  redirect('/recommendations/history?status=saved');
 }
