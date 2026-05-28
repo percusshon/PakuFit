@@ -3,6 +3,27 @@ import { redirect } from 'next/navigation'
 import { createServerClientSafe } from '@/lib/supabase/server'
 import { requireAuthUser } from '@/lib/supabase/server'
 import { PageContainer } from '@/components/page-container'
+import { type UserGoalType } from '@/lib/types/recommendation'
+
+const goalOptions: Array<{ value: UserGoalType | string; label: string }> = [
+  { value: 'weight_management', label: '体重管理を意識' },
+  { value: 'balanced_meals', label: '食事バランス改善' },
+  { value: 'higher_protein', label: 'たんぱく質を意識' },
+  { value: 'lower_fat', label: '脂質を控えめ' },
+  { value: 'convenience_store_friendly', label: '外食/コンビニ中心でも整える' },
+];
+
+const legacyGoalLabelMap: Record<string, string> = {
+  weight_management: '体重管理',
+  balance_improvement: '食事バランス改善',
+  protein_focus: 'たんぱく質を意識',
+  fat_moderation: '脂質を控えめ',
+  convenience_balance: '外食/コンビニ中心でも整える',
+  balanced_meals: '食事バランス改善',
+  higher_protein: 'たんぱく質を意識',
+  lower_fat: '脂質を控えめ',
+  convenience_store_friendly: '外食/コンビニ中心でも整える',
+};
 
 async function saveGoal(formData: FormData) {
   'use server'
@@ -69,11 +90,11 @@ export default async function GoalsPage({
             className="w-full rounded-md border border-amber-200 px-3 py-2"
             defaultValue="weight_management"
           >
-            <option value="weight_management">体重管理</option>
-            <option value="balance_improvement">食事バランス改善</option>
-            <option value="protein_focus">たんぱく質を意識</option>
-            <option value="fat_moderation">脂質を控えめ</option>
-            <option value="convenience_balance">外食/コンビニでも整える</option>
+            {goalOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
 
           <div className="grid gap-2 sm:grid-cols-3">
@@ -141,7 +162,7 @@ export default async function GoalsPage({
           <ul className="mt-3 space-y-2 text-sm text-amber-800">
             {goals?.map((goal) => (
               <li key={goal.id} className="rounded bg-white p-2">
-                {goal.goal_category}: kcal {goal.target_calories_per_day ?? '-'} / P:{goal.target_protein_g ?? '-'} g / F:{goal.target_fat_g ?? '-'} g / C:{goal.target_carbs_g ?? '-'} g
+                {legacyGoalLabelMap[goal.goal_category] ?? goal.goal_category}: kcal {goal.target_calories_per_day ?? '-'} / P:{goal.target_protein_g ?? '-'} g / F:{goal.target_fat_g ?? '-'} g / C:{goal.target_carbs_g ?? '-'} g
               </li>
             ))}
             {!goals?.length && <li className="text-amber-700">まだ目標は未登録です。</li>}

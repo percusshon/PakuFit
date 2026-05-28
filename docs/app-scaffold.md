@@ -72,3 +72,10 @@
   - 18時以降は「重すぎない候補」を追加
 - 表示文言は「AI推薦ではなく固定ルールによる参考候補」に統一
 - `/summary` に `/recommendations` 導線を追加
+
+## Phase 6（user_goals接続）
+
+- `user_goals` 取得処理を追加 (`lib/goals/queries.ts`) し、`getCurrentUserGoal` でログインユーザーの有効目標を参照。
+- `/recommendations` に目標表示を追加し、目標未設定時は設定画面誘導を表示。
+- `calculateMealRecommendations` の入力に目標情報を追加して、候補の優先順位と文言を目標別に最小調整。
+- `/settings/goals` は新目標キーへ更新（旧キーは表示上引き継ぎ可能）。

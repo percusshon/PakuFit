@@ -71,3 +71,14 @@
 - `meal_recommendations` の保存/履歴表示
 - パーソナライズ強化、時間帯・予算・在庫/希望チャネル対応
 - コンビニ/外食候補の安全なカテゴリ提示（現フェーズは具体的商品名を提示しない）
+
+## Phase 6（目標連携）
+
+- `user_goals` を `getCurrentUserGoal` で取得し、`/recommendations` の候補作成に反映。
+- 目標別の文言/優先度調整
+  - `weight_management`: 記録継続を重視する文言
+  - `balanced_meals`: バランスを取りやすい候補への寄せ
+  - `higher_protein`: たんぱく質候補を優先
+  - `lower_fat`: 脂質控えめ候補を優先
+  - `convenience_store_friendly`: 外食/コンビニでも選びやすいカテゴリ候補を優先
+- 目標未設定時は安全な案内を表示し、目標保存導線へ誘導。

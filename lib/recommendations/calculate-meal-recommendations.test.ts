@@ -36,6 +36,132 @@ describe('calculateMealRecommendations', () => {
     expect(joined).toContain('参考');
   });
 
+  it('higher_protein目標ではたんぱく質候補の優先度を上げる', () => {
+    const result = calculateMealRecommendations({
+      mealCount: 2,
+      estimatedCaloriesTotal: 800,
+      estimatedProteinTotal: 8,
+      estimatedFatTotal: 18,
+      estimatedCarbsTotal: 100,
+      nutritionInputCount: 2,
+      goalContext: {
+        goalType: 'higher_protein',
+        goalCategory: 'higher_protein',
+        targetCaloriesPerDay: null,
+        targetProteinG: null,
+        targetFatG: null,
+        targetCarbsG: null,
+      },
+      now: new Date(2026, 0, 1, 12, 0, 0),
+    });
+
+    const protein = result.candidates.find((candidate) => candidate.id === 'rule-protein');
+    expect(protein).toBeDefined();
+    expect(protein?.priority).toBe('high');
+    expect(protein?.title).toContain('たんぱく質を足しやすい候補');
+  });
+
+  it('lower_fat目標では脂質控えめ候補の優先度を上げる', () => {
+    const result = calculateMealRecommendations({
+      mealCount: 2,
+      estimatedCaloriesTotal: 900,
+      estimatedProteinTotal: 40,
+      estimatedFatTotal: 70,
+      estimatedCarbsTotal: 130,
+      nutritionInputCount: 2,
+      goalContext: {
+        goalType: 'lower_fat',
+        goalCategory: 'lower_fat',
+        targetCaloriesPerDay: null,
+        targetProteinG: null,
+        targetFatG: null,
+        targetCarbsG: null,
+      },
+      now: new Date(2026, 0, 1, 12, 0, 0),
+    });
+
+    const fat = result.candidates.find((candidate) => candidate.id === 'rule-fat');
+    expect(fat).toBeDefined();
+    expect(fat?.priority).toBe('high');
+    expect(fat?.title).toContain('脂質を控えめにしやすい候補');
+  });
+
+  it('balanced_meals目標ではバランスを取りやすい文言が付与される', () => {
+    const result = calculateMealRecommendations({
+      mealCount: 2,
+      estimatedCaloriesTotal: 950,
+      estimatedProteinTotal: 18,
+      estimatedFatTotal: 22,
+      estimatedCarbsTotal: 55,
+      nutritionInputCount: 2,
+      goalContext: {
+        goalType: 'balanced_meals',
+        goalCategory: 'balanced_meals',
+        targetCaloriesPerDay: null,
+        targetProteinG: null,
+        targetFatG: null,
+        targetCarbsG: null,
+      },
+      now: new Date(2026, 0, 1, 12, 0, 0),
+    });
+
+    const joined = [result.notices.join('\n'), result.reasons.map((reason) => reason.description).join('\n')].join('\n');
+    expect(joined).toContain('食事バランス');
+    expect(joined).toContain('バランスを取りやすい');
+  });
+
+  it('convenience_store_friendly目標でも具体的な商品名を出さない', () => {
+    const result = calculateMealRecommendations({
+      mealCount: 2,
+      estimatedCaloriesTotal: 700,
+      estimatedProteinTotal: 25,
+      estimatedFatTotal: 18,
+      estimatedCarbsTotal: 80,
+      nutritionInputCount: 2,
+      goalContext: {
+        goalType: 'convenience_store_friendly',
+        goalCategory: 'convenience_store_friendly',
+        targetCaloriesPerDay: null,
+        targetProteinG: null,
+        targetFatG: null,
+        targetCarbsG: null,
+      },
+      now: new Date(2026, 0, 1, 12, 0, 0),
+    });
+
+    const joined = JSON.stringify(result);
+    expect(joined).not.toContain('商品名');
+    expect(joined).not.toContain('特定の商品');
+    const hasGeneral = result.candidates.some((candidate) => candidate.id.includes('rule-convenience_store_friendly'));
+    expect(hasGeneral).toBe(true);
+  });
+
+  it('weight_management目標でも断定的な減量表現を出さない', () => {
+    const result = calculateMealRecommendations({
+      mealCount: 2,
+      estimatedCaloriesTotal: 900,
+      estimatedProteinTotal: 18,
+      estimatedFatTotal: 22,
+      estimatedCarbsTotal: 55,
+      nutritionInputCount: 2,
+      goalContext: {
+        goalType: 'weight_management',
+        goalCategory: 'weight_management',
+        targetCaloriesPerDay: 1800,
+        targetProteinG: 90,
+        targetFatG: 60,
+        targetCarbsG: 200,
+      },
+      now: new Date(2026, 0, 1, 12, 0, 0),
+    });
+
+    const text = JSON.stringify(result);
+    const forbiddenPhrases = ['痩せる', '減量できる'];
+    for (const phrase of forbiddenPhrases) {
+      expect(text).not.toContain(phrase);
+    }
+  });
+
   it('たんぱく質が少なそうな場合、たんぱく質候補を提示する', () => {
     const result = calculateMealRecommendations({
       mealCount: 2,
@@ -121,6 +247,7 @@ describe('calculateMealRecommendations', () => {
     const forbiddenPhrases = [
       '食べるべき',
       '痩せる',
+      '減量できる',
       '脂肪が落ちる',
       '血糖値が改善',
       '病気を防ぐ',

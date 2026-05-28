@@ -13,6 +13,7 @@ PakuFit は食事記録をサポートするためのMVPアプリです。
 - Phase 4: PFC/栄養概算入力MVP
 - Phase 5: 次の食事候補（固定ルールMVP）
 - Phase 5.5: 固定ルール推薦ロジックの単体テスト追加
+- Phase 6: user_goalsを推薦へ反映
 
 ## 主要ポリシー
 
@@ -90,6 +91,19 @@ npm run test
 
 - `lib/recommendations/calculate-meal-recommendations.ts` の主要分岐（未記録/PFC未入力/低たんぱく/高脂質/低炭水化物/時間帯）を固定の期待結果で検証。
 - 禁止表現（「食べるべき」「痩せる」「治療」など）が出力文字列に含まれないことを自動確認。
+
+Phase6（user_goals推薦連携）:
+
+```bash
+npm run test
+npm run lint
+npm run typecheck
+npm run build
+supabase test db
+```
+
+- 目標保存（`/settings/goals`）と、`/recommendations` の候補表示で目標反映が成立することを確認。
+- 固定ルールは「次の食事候補」「バランスを取りやすい候補」に限定し、医療・診断・治療として扱わないことを前提に維持。
 
 ## 検証時の補足
 

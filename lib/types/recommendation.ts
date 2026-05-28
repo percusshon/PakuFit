@@ -1,5 +1,21 @@
 export type RecommendationPriority = "high" | "medium" | "low";
 
+export type UserGoalType =
+  | "weight_management"
+  | "balanced_meals"
+  | "higher_protein"
+  | "lower_fat"
+  | "convenience_store_friendly";
+
+export type RecommendationGoalContext = {
+  goalType: UserGoalType;
+  goalCategory: string;
+  targetCaloriesPerDay: number | null;
+  targetProteinG: number | null;
+  targetFatG: number | null;
+  targetCarbsG: number | null;
+};
+
 export type RecommendationReasonCode =
   | "no_records"
   | "insufficient_pfc_input"
@@ -7,6 +23,8 @@ export type RecommendationReasonCode =
   | "high_fat"
   | "low_carbs"
   | "evening"
+  | "balanced_goal"
+  | "goal_context"
   | "general";
 
 export type RecommendationReason = {
@@ -35,6 +53,7 @@ export type RecommendationContext = {
   estimatedCarbsTotal: number;
   nutritionInputCount: number;
   now: Date;
+  goalContext?: RecommendationGoalContext | null;
 };
 
 export type RecommendationResult = {
