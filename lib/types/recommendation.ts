@@ -16,6 +16,38 @@ export type RecommendationGoalContext = {
   targetCarbsG: number | null;
 };
 
+export type RecommendationSource = "rule_based";
+
+export type SavedMealRecommendation = {
+  id: string;
+  user_id: string;
+  recommendation_date: string;
+  generated_at: string;
+  goal_category: UserGoalType | null;
+  data_completeness: number;
+  candidate_key: string;
+  candidate_title: string;
+  candidate_description: string;
+  reason_code: string | null;
+  reason_label: string | null;
+  caution_text: string | null;
+  source: RecommendationSource;
+  snapshot: Record<string, unknown> | null;
+};
+
+export type SaveMealRecommendationInput = {
+  candidateKey: string;
+  candidateTitle: string;
+  candidateDescription: string;
+  reasonCode: string | null;
+  reasonLabel: string | null;
+  cautionText: string | null;
+  goalCategory: UserGoalType | null;
+  dataCompleteness: number;
+  source: RecommendationSource;
+  snapshot: Record<string, unknown> | null;
+};
+
 export type RecommendationReasonCode =
   | "no_records"
   | "insufficient_pfc_input"

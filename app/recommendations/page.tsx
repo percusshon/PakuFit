@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { formatRecommendationCompleteness, calculateMealRecommendations } from '@/lib/recommendations/calculate-meal-recommendations';
+import { saveMealRecommendations } from '@/lib/recommendations/actions';
 import { getTodayMealSummary } from '@/lib/meals/queries';
 import { getCurrentUserGoal } from '@/lib/goals/queries';
 import { type UserGoalType } from '@/lib/types/recommendation';
@@ -15,7 +16,14 @@ const goalLabelMap: Record<UserGoalType, string> = {
   convenience_store_friendly: '外食/コンビニ中心でも整える',
 };
 
-export default async function RecommendationsPage() {
+export default async function RecommendationsPage({
+  searchParams,
+}: {
+  searchParams: {
+    saved?: string;
+    error?: string;
+  };
+}) {
   const user = await requireAuthUser('/login');
   const summary = await getTodayMealSummary();
   const currentGoal = await getCurrentUserGoal();
@@ -35,9 +43,30 @@ export default async function RecommendationsPage() {
   const hasRecords = summary.meal_count > 0;
   const goalLabel = currentGoal?.goalType ? goalLabelMap[currentGoal.goalType] : null;
 
+  const snapshot = {
+    source: result.source,
+    mealCount: summary.meal_count,
+    estimatedCaloriesTotal: summary.estimated_calories_total,
+    estimatedProteinTotal: summary.estimated_protein_g_total,
+    estimatedFatTotal: summary.estimated_fat_g_total,
+    estimatedCarbsTotal: summary.estimated_carbs_g_total,
+    nutritionInputCount: summary.nutrition_estimate_input_count,
+    goalType: currentGoal?.goalType ?? null,
+  };
+
   return (
     <PageContainer title="次の食事候補" description={`ログイン中: ${user.email ?? 'ユーザー'}`}>
       <div className="space-y-3">
+        {searchParams?.saved === '1' && (
+          <p className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">保存しました。履歴で確認できます。</p>
+        )}
+        {searchParams?.error === 'save_recommendation_failed' && (
+          <p className="rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">保存に失敗しました。時間をおいて再試行してください。</p>
+        )}
+        {searchParams?.error === 'save_recommendation_invalid_input' && (
+          <p className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">保存内容を作成できませんでした。候補を再選択してください。</p>
+        )}
+
         <p className="rounded-md border border-amber-200 bg-white p-4 text-sm leading-6 text-amber-800">
           AI推薦ではなく、固定ルールによる一般的な食事管理の参考候補を表示しています。候補は指示ではありません。
         </p>
@@ -49,6 +78,10 @@ export default async function RecommendationsPage() {
           <p className="mt-2 text-sm text-slate-600">
             <Link href="/settings/goals" className="font-medium text-amber-900 underline underline-offset-2">
               目標を設定・見直す
+            </Link>
+            <span className="mx-2 text-slate-400">/</span>
+            <Link href="/recommendations/history" className="font-medium text-amber-900 underline underline-offset-2">
+              保存履歴を見る
             </Link>
           </p>
         </section>
@@ -97,17 +130,50 @@ export default async function RecommendationsPage() {
           ) : null}
           {result.candidates.length > 0 ? (
             <ul className="space-y-3">
-              {result.candidates.map((candidate) => (
-                <li key={candidate.id} className="rounded-md border border-slate-200 bg-white p-4">
-                  <p className="text-sm font-semibold text-slate-900">
-                    {candidate.title}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-700">{candidate.summary}</p>
-                  <p className="mt-2 text-sm text-slate-600">{candidate.details}</p>
-                  <p className="mt-2 text-sm text-slate-600">概算メモ: {candidate.nutritionHint}</p>
-                  <p className="mt-2 text-xs text-amber-700">{candidate.safetyNotice}</p>
-                </li>
-              ))}
+              {result.candidates.map((candidate) => {
+                const reasonCode = candidate.reasonCodes[0];
+                const matchedReason = reasonCode ? result.reasons.find((reason) => reason.code === reasonCode) : undefined;
+
+                return (
+                  <li key={candidate.id} className="rounded-md border border-slate-200 bg-white p-4">
+                    <p className="text-sm font-semibold text-slate-900">{candidate.title}</p>
+                    <p className="mt-1 text-sm text-slate-700">{candidate.summary}</p>
+                    <p className="mt-2 text-sm text-slate-600">{candidate.details}</p>
+                    <p className="mt-2 text-sm text-slate-600">概算メモ: {candidate.nutritionHint}</p>
+                    <p className="mt-2 text-xs text-amber-700">{candidate.safetyNotice}</p>
+                    <form action={saveMealRecommendations} className="mt-3">
+                      <input type="hidden" name="candidate_key" value={candidate.id} />
+                      <input type="hidden" name="candidate_title" value={candidate.title} />
+                      <input
+                        type="hidden"
+                        name="candidate_description"
+                        value={`${candidate.summary} / ${candidate.details}`}
+                      />
+                      <input type="hidden" name="reason_code" value={matchedReason?.code ?? ''} />
+                      <input type="hidden" name="reason_label" value={matchedReason?.label ?? ''} />
+                      <input type="hidden" name="caution_text" value={candidate.safetyNotice} />
+                      <input type="hidden" name="goal_category" value={currentGoal?.goalType ?? ''} />
+                      <input type="hidden" name="data_completeness" value={result.dataCompleteness} />
+                      <input type="hidden" name="source" value={result.source} />
+                      <input
+                        type="hidden"
+                        name="snapshot"
+                        value={JSON.stringify({
+                          ...snapshot,
+                          selectedCandidateId: candidate.id,
+                          selectedCandidatePriority: candidate.priority,
+                        })}
+                      />
+                      <button
+                        type="submit"
+                        className="mt-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+                      >
+                        この候補を保存
+                      </button>
+                    </form>
+                  </li>
+                );
+              })}
             </ul>
           ) : null}
         </section>

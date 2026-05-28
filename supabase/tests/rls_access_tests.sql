@@ -26,6 +26,8 @@ $$;
 
 set role postgres;
 
+truncate table public.meal_recommendations restart identity;
+
 INSERT INTO auth.users (id, email, is_sso_user, is_anonymous)
 VALUES
   (:'USER_A_ID'::uuid, 'user-a@local.test', false, false),
@@ -50,6 +52,60 @@ VALUES
   (:'USER_B_ID'::uuid, 'protein_focus', 1900, 115, 52, 200)
 ON CONFLICT (user_id, goal_category) DO NOTHING;
 
+INSERT INTO public.meal_recommendations (
+  id,
+  user_id,
+  recommendation_date,
+  candidate_name,
+  recommendation_type,
+  explanation,
+  candidate_key,
+  goal_category,
+  data_completeness,
+  reason_code,
+  reason_label,
+  caution_text,
+  source,
+  generated_at,
+  snapshot
+)
+VALUES
+  (
+    '00000000-0000-0000-0000-000000000201'::uuid,
+    :'USER_A_ID'::uuid,
+    current_date,
+    '保存済みサンプル',
+    'any',
+    '保存済み候補の説明',
+    'rule-bp',
+    'weight_management',
+    0.60,
+    'sample_reason',
+    'サンプル理由',
+    'サンプル注意',
+    'rule_based',
+    timezone('utc', now()),
+    '{"context":"seed"}'::jsonb
+  ),
+  (
+    '00000000-0000-0000-0000-000000000202'::uuid,
+    :'USER_B_ID'::uuid,
+    current_date,
+    '保存済みサンプルB',
+    'any',
+    '保存済み候補Bの説明',
+    'rule-carb',
+    'balanced_meals',
+    0.55,
+    'sample_reason_b',
+    'サンプル理由B',
+    'サンプル注意B',
+    'rule_based',
+    timezone('utc', now()),
+    '{"context":"seed"}'::jsonb
+  )
+ON CONFLICT (id) DO NOTHING;
+
 INSERT INTO public.partner_stores (id, store_code, store_name, region, prefecture, is_active)
 VALUES
   ('00000000-0000-0000-0000-000000000010', 'STORE-A', 'Partner Store Sample', 'Tokyo', 'Tokyo', true)
@@ -65,7 +121,7 @@ VALUES
   ('00000000-0000-0000-0000-000000000031', :'USER_A_ID'::uuid, 'seed', 'meal_entries', '11111111-1111-1111-1111-111111111101'::uuid, '{"source":"seed"}'::jsonb)
 ON CONFLICT (id) DO NOTHING;
 
-select plan(22);
+select plan(28);
 
 select public.set_test_jwt(:'USER_A_ID'::uuid);
 set role authenticated;
@@ -285,6 +341,109 @@ select is(
   (select count(*)::int from public.nutrition_estimates where id = '00000000-0000-0000-0000-000000000102'),
   1,
   'user A はuser Bのnutrition_estimatesをdeleteできない'
+);
+set role authenticated;
+
+-- 22) user A は自分のmeal_recommendationsを読める
+select is(
+  (select count(*)::int from public.meal_recommendations where user_id = :'USER_A_ID'::uuid),
+  1,
+  'user A は自分のmeal_recommendationsを読める'
+);
+
+-- 23) user A はuser Bのmeal_recommendationsを読めない
+select is(
+  (select count(*)::int from public.meal_recommendations where user_id = :'USER_B_ID'::uuid),
+  0,
+  'user A はuser Bのmeal_recommendationsを読めない'
+);
+
+-- 24) user A は自分のmeal_recommendationsをinsertできる
+insert into public.meal_recommendations (
+  id,
+  user_id,
+  recommendation_date,
+  candidate_name,
+  recommendation_type,
+  explanation,
+  candidate_key,
+  source,
+  goal_category,
+  data_completeness
+)
+values (
+  '00000000-0000-0000-0000-000000000203'::uuid,
+  :'USER_A_ID'::uuid,
+  current_date,
+  'phase7 candidate',
+  'any',
+  'phase7 test',
+  'rule-phase7',
+  'rule_based',
+  'higher_protein',
+  0.7
+);
+select is(
+  (select count(*)::int from public.meal_recommendations where id = '00000000-0000-0000-0000-000000000203'::uuid),
+  1,
+  'user A は自分のmeal_recommendationsをinsertできる'
+);
+
+-- 25) user A はuser Bのmeal_recommendationsをinsertできない
+do $$
+begin
+  begin
+    insert into public.meal_recommendations (
+      id,
+      user_id,
+      recommendation_date,
+      candidate_name,
+      recommendation_type,
+      explanation,
+      candidate_key,
+      source
+    ) values (
+      '00000000-0000-0000-0000-000000000204'::uuid,
+      '00000000-0000-0000-0000-000000000002'::uuid,
+      current_date,
+      'forbidden insert',
+      'any',
+      'forbidden',
+      'forbidden',
+      'rule_based'
+    );
+  exception
+    when insufficient_privilege then
+      null;
+  end;
+end $$;
+select is(
+  (select count(*)::int from public.meal_recommendations where id = '00000000-0000-0000-0000-000000000204'::uuid),
+  0,
+  'user A はuser Bのmeal_recommendationsをinsertできない'
+);
+
+-- 26) user A はuser Bのmeal_recommendationsをupdateできない
+set role authenticated;
+update public.meal_recommendations
+set caution_text = 'blocked'
+where id = '00000000-0000-0000-0000-000000000202'::uuid;
+set role postgres;
+select is(
+  (select caution_text from public.meal_recommendations where id = '00000000-0000-0000-0000-000000000202'::uuid),
+  'サンプル注意B',
+  'user A はuser Bのmeal_recommendationsをupdateできない'
+);
+set role authenticated;
+
+-- 27) user A はuser Bのmeal_recommendationsをdeleteできない
+delete from public.meal_recommendations
+where id = '00000000-0000-0000-0000-000000000202'::uuid;
+set role postgres;
+select is(
+  (select count(*)::int from public.meal_recommendations where id = '00000000-0000-0000-0000-000000000202'::uuid),
+  1,
+  'user A はuser Bのmeal_recommendationsをdeleteできない'
 );
 set role authenticated;
 

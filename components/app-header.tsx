@@ -23,6 +23,12 @@ export default async function AppHeader() {
               <Link href="/meals" className="text-amber-800 hover:text-amber-900">
                 記録
               </Link>
+              <Link href="/recommendations" className="text-amber-800 hover:text-amber-900">
+                次の候補
+              </Link>
+              <Link href="/recommendations/history" className="text-amber-800 hover:text-amber-900">
+                履歴
+              </Link>
               <Link href="/settings/goals" className="text-amber-800 hover:text-amber-900">
                 目標
               </Link>

@@ -79,3 +79,11 @@
 - `/recommendations` に目標表示を追加し、目標未設定時は設定画面誘導を表示。
 - `calculateMealRecommendations` の入力に目標情報を追加して、候補の優先順位と文言を目標別に最小調整。
 - `/settings/goals` は新目標キーへ更新（旧キーは表示上引き継ぎ可能）。
+
+## Phase 7（次の食事候補履歴MVP）
+
+- `lib/recommendations/actions.ts` を追加し、表示候補を本人ユーザーとして保存。
+- `lib/recommendations/queries.ts` を追加し、保存履歴を本人分新着順で取得。
+- `/recommendations` へ候補保存ボタンを追加し、保存後に履歴画面へ遷移可能に。
+- `/recommendations/history` を追加し、保存済み候補履歴一覧を実装。
+- `lib/types/recommendation.ts` を `SavedMealRecommendation` 系で拡張。
