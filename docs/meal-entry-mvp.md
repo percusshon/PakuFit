@@ -40,6 +40,11 @@
 - `nutrition_estimates` は本人のデータのみ読取/更新
 - 他ユーザーの `nutrition_estimates` に対してはアクセス不可
 
+## Phase 5連携
+
+- `nutrition_estimates` の当日合計値とPFC入力件数を、次の食事候補の固定ルールロジックに渡す前提です。
+- 候補側は `meal_entries` の保存後データを前提に、AI推定ではなく説明可能なルールで表示します。
+
 ## 非実装範囲
 
 - 写真アップロード

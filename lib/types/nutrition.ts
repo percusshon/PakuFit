@@ -35,4 +35,5 @@ export type NutritionSummary = {
   estimated_carbs_g_total: number;
   estimated_fiber_g_total: number;
   estimated_salt_g_total: number;
+  nutrition_estimate_input_count: number;
 };

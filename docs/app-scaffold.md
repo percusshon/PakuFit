@@ -60,3 +60,15 @@
 - 新規migration
   - `supabase/migrations/0003_nutrition_estimate_mvp.sql`（`nutrition_estimates` のPFC拡張）
 - RLSテストを `nutrition_estimates` 操作観点で拡張
+
+## Phase 5（次の食事候補：固定ルールMVP）
+
+- `/recommendations` を実データ接続し、`getTodayMealSummary` の結果を元に固定ルール候補を表示
+- `lib/recommendations/calculate-meal-recommendations.ts` を新規追加
+- 候補条件の例
+  - 今日の記録が0件: 記録を促す導線を優先表示
+  - PFC入力不足: 不確実性文言を明示
+  - たんぱく質不足・脂質高め・炭水化物不足を条件化
+  - 18時以降は「重すぎない候補」を追加
+- 表示文言は「AI推薦ではなく固定ルールによる参考候補」に統一
+- `/summary` に `/recommendations` 導線を追加

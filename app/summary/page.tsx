@@ -1,6 +1,7 @@
 import { getRecentMealEntries, getTodayMealSummary } from '@/lib/meals/queries';
 import { requireAuthUser } from '@/lib/supabase/server';
 import { PageContainer } from '@/components/page-container';
+import Link from 'next/link';
 
 export default async function SummaryPage() {
   const user = await requireAuthUser('/login');
@@ -58,6 +59,17 @@ export default async function SummaryPage() {
               ))}
             </ul>
           )}
+        </section>
+
+        <section className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          <p className="font-semibold text-amber-900">次の食事候補との接続</p>
+          <p className="mt-1">
+            PFC任意入力があると、候補の参考情報が出しやすくなります。まずは
+            <Link href="/recommendations" className="mx-1 font-semibold text-amber-900 underline underline-offset-2">
+              次の食事候補
+            </Link>
+            を確認してください。
+          </p>
         </section>
 
         <p className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">

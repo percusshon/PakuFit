@@ -11,6 +11,7 @@ PakuFit は食事記録をサポートするためのMVPアプリです。
 - Phase 2.5: Supabase local RLS検証
 - Phase 3: 食事登録MVP（本登録、一覧、当日サマリー）
 - Phase 4: PFC/栄養概算入力MVP
+- Phase 5: 次の食事候補（固定ルールMVP）
 
 ## 主要ポリシー
 
@@ -63,6 +64,20 @@ npm run lint
 npm run typecheck
 npm run build
 ```
+
+Phase5の次の食事候補MVP検証:
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+supabase test db
+```
+
+補足:
+
+- 候補表示は「固定ルールによる参考候補」であり、AI推薦や診断・治療を示すものではありません。
+- 本フェーズは表示優先のため、候補履歴の保存は次フェーズで追加する方針です。
 
 ## 検証時の補足
 

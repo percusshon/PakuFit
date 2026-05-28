@@ -61,6 +61,22 @@ const normalizeNonNegativeInt = (value: number | string | null | undefined) => {
   return Math.floor(parsed);
 };
 
+const hasNutritionValue = (
+  row: Pick<
+    NutritionEstimateRow,
+    'meal_entry_id' | 'estimated_protein_g' | 'estimated_fat_g' | 'estimated_carbs_g' | 'estimated_fiber_g' | 'estimated_salt_g'
+  >,
+) => {
+  const candidate = toNutritionSummary(row);
+  return (
+    candidate.estimated_protein_g !== null ||
+    candidate.estimated_fat_g !== null ||
+    candidate.estimated_carbs_g !== null ||
+    candidate.estimated_fiber_g !== null ||
+    candidate.estimated_salt_g !== null
+  );
+};
+
 const toNutritionSummary = (
   row: Pick<
     NutritionEstimateRow,
@@ -167,6 +183,7 @@ export async function getTodayMealSummary(): Promise<GetTodayMealSummaryResult> 
       estimated_carbs_g_total: 0,
       estimated_fiber_g_total: 0,
       estimated_salt_g_total: 0,
+      nutrition_estimate_input_count: 0,
     };
   }
 
@@ -188,6 +205,7 @@ export async function getTodayMealSummary(): Promise<GetTodayMealSummaryResult> 
       estimated_carbs_g_total: 0,
       estimated_fiber_g_total: 0,
       estimated_salt_g_total: 0,
+      nutrition_estimate_input_count: 0,
     };
   }
 
@@ -202,6 +220,7 @@ export async function getTodayMealSummary(): Promise<GetTodayMealSummaryResult> 
   let estimatedCarbsTotal = 0;
   let estimatedFiberTotal = 0;
   let estimatedSaltTotal = 0;
+  let estimatedNutritionInputCount = 0;
 
   if (!nutritionError && nutritionRows) {
     nutritionRows.forEach((row) => {
@@ -216,6 +235,9 @@ export async function getTodayMealSummary(): Promise<GetTodayMealSummaryResult> 
       estimatedCarbsTotal += nutrition.estimated_carbs_g ?? 0;
       estimatedFiberTotal += nutrition.estimated_fiber_g ?? 0;
       estimatedSaltTotal += nutrition.estimated_salt_g ?? 0;
+      if (hasNutritionValue(typedRow)) {
+        estimatedNutritionInputCount += 1;
+      }
     });
   }
 
@@ -228,5 +250,6 @@ export async function getTodayMealSummary(): Promise<GetTodayMealSummaryResult> 
     estimated_carbs_g_total: estimatedCarbsTotal,
     estimated_fiber_g_total: estimatedFiberTotal,
     estimated_salt_g_total: estimatedSaltTotal,
+    nutrition_estimate_input_count: estimatedNutritionInputCount,
   };
 }
