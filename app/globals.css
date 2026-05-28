@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground: #1f2937;
+  --background: #f8fbff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  color: var(--foreground);
+  background: radial-gradient(circle at top, #f0f8ff 0%, var(--background) 45%, #edf5ff 100%);
+  font-family: Noto Sans JP, Hiragino Kaku Gothic ProN, Yu Gothic, Meiryo, sans-serif;
+}
+
+a {
+  color: inherit;
+}
