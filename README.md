@@ -1,97 +1,56 @@
-# パクフィット / PakuFit
+# PakuFit / パクフィット
 
-## 概要
+PakuFit は食事の写真・テキスト記録をサポートし、カロリー/PFCを**概算**として扱う BtoC向け食事記録アプリのMVPです。
 
-パクフィット（PakuFit）は、食事写真・テキスト入力をもとに、1日あたりのカロリー/PFC（たんぱく質・脂質・炭水化物）を概算し、次の食事候補を提案する食事記録アプリです。
+## 開発ステータス
 
-本プロジェクトは、**診断・治療・疾病改善を目的としない一般的な食事記録と行動サポート**を扱います。
+- Phase 1: Next.js + Supabaseの設計スキャフォールド（完了）
+- Phase 2: Supabase Auth + 初期DB migration + RLS土台（このリポジトリで実装中）
 
-### 現在の開発ステータス
+## 重要な方針
 
-- Phase0: 設計ドキュメント完了（READMEと各種要件・設計）
-- Phase1: Next.js + Supabase scaffold 完了（本リリース）
-- Phase2+: 食事記録MVP実装へ移行中
+- サービス上の表現は「次の食事候補」「バランスを取りやすい候補」「概算」「ユーザー確認が必要」を基本語彙にする。
+- 医療的判断や結果保証を目的とする表現や断定を避けます。
+- AI推定は確定値として扱わず、あくまで参考情報。
 
-## 開発範囲（MVP）
-
-- ユーザー登録/ログインUI（接続は次フェーズ）
-- 食事写真アップロード導線（実接続は次フェーズ）
-- 食事テキスト入力
-- AI推定結果の表示（設計上の候補）
-- 料理名・量・食べた割合・調理方法のユーザー補正
-- カロリー/PFCは概算として表示
-- 1日の合計・残量サマリー
-- 次の食事候補提示
-- 目標設定UIの土台
-
-## 非MVP（本フェーズ未実装）
-
-- 実AI Vision API接続
-- JAN/バーコード/API連携
-- コンビニ/スーパー商品DB連携
-- 決済・広告・アフィリエイト
-- 本格的な認証連携（Supabase接続は準備段階）
-
-## 開始方法
+## セットアップ
 
 ```bash
 npm install
-npm run dev
 ```
 
-開発サーバー: [http://localhost:3000](http://localhost:3000)
-
-## scaffold後の検証コマンド
+## 起動・検証
 
 ```bash
+cp .env.example .env.local
+npm run dev
 npm run lint
 npm run typecheck
 npm run build
 ```
 
-## 環境変数（準備）
+## 環境変数（`.env.example`）
 
-- 実データの接続情報は `env.example` 参照
-- `.env`, `.env.local`, `.env.*.local` はGit管理対象外
-- public anon keyのみを前提とし、`service_role`は使いません
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_APP_URL`
 
-## Phase1完了内容
+> `service_role` キーは使用しません。
 
-- Next.js 14 + TypeScript + App Router + Tailwind土台
-- 画面ルート追加
-  - `/login`
-  - `/meals`
-  - `/meals/new`
-  - `/summary`
-  - `/recommendations`
-  - `/privacy`
-  - `/safety`
-  - `/settings/goals`
-- Supabase準備ヘルパー追加
-  - `lib/supabase/client.ts`
-  - `lib/supabase/server.ts`
-  - `lib/env.ts`
-- 型定義（表示前提）
-  - `lib/types/meal.ts`
-  - `lib/types/nutrition.ts`
-  - `lib/types/recommendation.ts`
-- 共通コンポーネント
-  - `components/app-header.tsx`
-  - `components/page-container.tsx`
-  - `components/safety-notice.tsx`
-  - `components/feature-card.tsx`
-  - `components/status-badge.tsx`
-- デモデータ追加
-  - `lib/demo/demo-meals.ts`
-  - `lib/demo/demo-recommendations.ts`
+## Supabase
 
-## 安全方針
+- `supabase/migrations/0001_initial_schema.sql` に初期テーブルとRLSを定義
+- RLS確認用に `supabase/seed/rls_test_seed.sql`, `supabase/tests/rls_access_tests.sql` を追加
 
-- 医療・診断・治療の断定をしない
-- 表示文言は「候補」「概算」「一般的な食事管理の参考情報」を基本とする
-- 摂食障害リスク等への配慮文言を常設表示する
+## Phase 2完了内容
 
-## ファイル構成メモ
+- App Router 側の Magic Link ログイン導線
+- callback/logout ルート
+- 認証必要ページの保護
+- `@supabase/ssr` を使ったクライアント/サーバー両面ヘルパー
+- 初期DB migration とRLS基盤
 
-- `docs/repository-structure.md` に推奨フォルダ名 `pakufit` と現状フォルダ名の関係を明記
-- `docs/app-scaffold.md` に画面追加内容、未実装範囲、接続方針、安全表現を記載
+## セーフティ
+
+- 摂食障害リスク、未成年配慮、体調面の注意文言をUI上で維持。
+- 商用運用前に運用監視と文言監査を実施。

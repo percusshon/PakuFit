@@ -1,33 +1,42 @@
-import Link from "next/link";
+import Link from 'next/link'
 
-const navItems = [
-  { label: "ホーム", href: "/" },
-  { label: "食事記録", href: "/meals" },
-  { label: "今日のサマリー", href: "/summary" },
-  { label: "候補提案", href: "/recommendations" },
-  { label: "設定", href: "/settings/goals" },
-  { label: "安全方針", href: "/safety" }
-];
+import { getServerUser } from '@/lib/supabase/server'
 
-export function AppHeader() {
+export default async function AppHeader() {
+  const user = await getServerUser()
+
   return (
-    <header className="sticky top-0 z-10 border-b border-white/60 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8">
-        <Link href="/" className="text-lg font-bold text-pakufit-700">
-          パクフィット / PakuFit
-        </Link>
-        <nav className="flex flex-wrap gap-2 text-sm">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-full border border-transparent px-3 py-1 text-slate-700 transition hover:border-pakufit-200 hover:bg-pakufit-50"
-            >
-              {item.label}
+    <header className="border-b border-amber-200/80 bg-white/95 backdrop-blur">
+      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
+        <div>
+          <h1 className="text-lg font-semibold text-amber-900">パクフィット / PakuFit</h1>
+          <p className="text-xs text-amber-700">食事記録をサポートするダッシュボード</p>
+        </div>
+
+        <nav className="flex items-center gap-3 text-sm">
+          <Link href="/" className="text-amber-800 hover:text-amber-900">
+            ホーム
+          </Link>
+          {user ? (
+            <>
+              <span className="text-amber-700">ログイン中: {user.email ?? 'ユーザー'}</span>
+              <Link href="/meals" className="text-amber-800 hover:text-amber-900">
+                記録
+              </Link>
+              <Link href="/settings/goals" className="text-amber-800 hover:text-amber-900">
+                目標
+              </Link>
+              <Link href="/logout" className="font-semibold text-amber-700 underline-offset-4 hover:underline">
+                ログアウト
+              </Link>
+            </>
+          ) : (
+            <Link href="/login" className="font-semibold text-amber-700 underline-offset-4 hover:underline">
+              ログイン
             </Link>
-          ))}
+          )}
         </nav>
       </div>
     </header>
-  );
+  )
 }

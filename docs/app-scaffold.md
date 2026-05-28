@@ -1,68 +1,39 @@
-# PakuFit App Scaffold
+# PakuFit App Scaffold（現状）
 
-## 追加した画面
+## Phase 1（完了）
 
-- `/`（トップ）
-  - 概要、主要機能、開発中ステータス
-- `/login`
-  - 認証UI雛形（接続は次フェーズ）
-- `/meals`
-  - 食事記録一覧（サンプルデータ表示）
-- `/meals/new`
-  - 食事登録フォーム（写真/テキスト）
-- `/summary`
-  - 1日サマリ（カロリー/PFC概算）
-- `/recommendations`
-  - 次の食事候補提示（固定ルール前提）
-- `/privacy`
-  - プライバシー方針
-- `/safety`
-  - 表現ルール・安全原則
-- `/settings/goals`
-  - 目標設定
+- Next.js 14 App Router + TypeScript + Tailwind の土台
+- 主要画面追加
+  - `/`
+  - `/login`
+  - `/meals`
+  - `/meals/new`
+  - `/summary`
+  - `/recommendations`
+  - `/privacy`
+  - `/safety`
+  - `/settings/goals`
+- 共通コンポーネント導入
+  - `components/app-header.tsx`
+  - `components/page-container.tsx`
+  - `components/safety-notice.tsx`
+  - `components/feature-card.tsx`
+  - `components/status-badge.tsx`
 
-## 追加した共通コンポーネント
+## Phase 2（本対応）
 
-- `components/app-header.tsx`
-  - 共通ヘッダーと主要導線
-- `components/page-container.tsx`
-  - 各ページの共通レイアウト
-- `components/safety-notice.tsx`
-  - 共通安全文言
-- `components/feature-card.tsx`
-  - ランディングのカードUI
-- `components/status-badge.tsx`
-  - データ状態を表す簡易バッジ
-
-## Supabase接続方針
-
-- `lib/supabase/client.ts`
-  - ブラウザ側から`@supabase/supabase-js`の`createClient`を使う土台
-- `lib/supabase/server.ts`
-  - サーバー側で同一認証情報を使ってクライアントを生成する土台
-- `lib/env.ts`
-  - `NEXT_PUBLIC_SUPABASE_URL`と`NEXT_PUBLIC_SUPABASE_ANON_KEY`を利用
-- `service_role`キーは使わず、匿名キー前提
-- 現段階は接続成立前提のUI検証ができる構造に留める
-
-## 未実装範囲（本フェーズ）
-
-- 実Supabaseプロジェクト接続（URL/APIキー未設定）
-- 実AI Vision API
-- JAN/バーコードAPI
-- コンビニDB連携
-- 決済・広告・アフィリエイト
-- 実際のカロリー計算ロジック（現在は型・画面上のサンプル）
-
-## 安全表現方針
-
-- 禁止
-  - 「必ず食べるべき」
-  - 「この食事で痩せる」
-  - 「病気を防ぐ」
-  - 「AI栄養指導」
-- 推奨
-  - 「食事記録をサポート」
-  - 「カロリー/PFCを概算」
-  - 「ユーザー確認が必要」
-  - 「次の食事候補」
+- Auth基盤を追加
+  - `app/login/page.tsx`: メールアドレスによる Magic Link 入力
+  - `app/auth/callback/route.ts`: `code` を使ってセッション確立
+  - `app/logout/route.ts`: ログアウト
+- Auth状態表示
+  - `components/app-header.tsx` をログイン状態に応じて差し替え
+  - ログイン中はメールとログアウトリンク表示
+- 保護ページ
+  - `/meals`, `/meals/new`, `/summary`, `/recommendations`, `/settings/goals` を server 側で未ログイン時 `/login` 遷移
+- Supabase helperをSSR前提へ
+  - `lib/supabase/server.ts` を cookie 対応に
+  - `lib/env.ts` で必須環境変数名を確認
+- DB migration + RLS土台
+  - `supabase/migrations/0001_initial_schema.sql` 追加
+  - `supabase/tests/rls_access_tests.sql` / `supabase/seed/rls_test_seed.sql` 追加

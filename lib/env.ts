@@ -1,8 +1,29 @@
 export const env = {
-  appName: process.env.NEXT_PUBLIC_APP_NAME || "パクフィット / PakuFit",
-  appUrl: process.env.NEXT_PUBLIC_APP_URL || "",
-  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-};
+  NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
+  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL ?? '',
+} as const
 
-export const hasSupabaseConfig = Boolean(env.supabaseUrl && env.supabaseAnonKey);
+export type AppEnv = typeof env
+
+const requiredEnvVars: Array<keyof AppEnv> = [
+  'NEXT_PUBLIC_SUPABASE_URL',
+  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  'NEXT_PUBLIC_APP_URL',
+]
+
+export const getEnvValidation = () => {
+  const missingEnvVars = requiredEnvVars.filter((key) => !env[key])
+  return {
+    isValid: missingEnvVars.length === 0,
+    missingEnvVars,
+  }
+}
+
+if (process.env.NODE_ENV !== 'production') {
+  const { isValid, missingEnvVars } = getEnvValidation()
+
+  if (!isValid) {
+    console.warn(`PakuFit env: missing keys -> ${missingEnvVars.join(', ')}`)
+  }
+}

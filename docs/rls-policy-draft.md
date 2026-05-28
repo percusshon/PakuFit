@@ -1,68 +1,48 @@
-# RLSポリシー草案（Supabase想定）
+# PakuFit RLS方針（Phase 2 実装版）
 
 ## 基本方針
 
-- ユーザーは自分の食事データを本人のみ読める/書ける
-- 管理者でも個別画像・個別食事内容には原則アクセスしない
-- 外部提携先には個人を特定できる粒度の食事データを渡さない
-- 集計時は匿名化・最小化し、再識別が難しい形に変換
+- `auth.uid()` を使った本人確認を前提にする。
+- `service_role` key は使用しない。
+- 管理画面は未実装のため、ユーザー側は原則 CRUD のみ `自分の` データ。
 
-## 各テーブル方針
+## ユーザー所有テーブル
 
-### profiles / user_goals / meal_entries / meal_photos / food_items / nutrition_estimates / daily_nutrition_summaries / meal_recommendations
+以下のテーブルは以下を原則とする。
 
-- SELECT
-  - `auth.uid() = user_id`
-- INSERT/UPDATE/DELETE
-  - `auth.uid() = user_id`
-- meal_photosはmeal_entriesを経由した所有者確認を追加
-  - `exists (select 1 from meal_entries me where me.id = meal_photos.meal_entry_id and me.user_id = auth.uid())`
+- select: `auth.uid() = user_id`
+- insert: `auth.uid() = user_id`
+- update: `auth.uid() = user_id`
+- delete: `auth.uid() = user_id`
 
-### partner_products / partner_stores
+対象:
+- `profiles`（`id` と `auth.uid()` を比較）
+- `user_goals`
+- `meal_entries`
+- `meal_photos`
+- `food_items`
+- `nutrition_estimates`
+- `daily_nutrition_summaries`
+- `meal_recommendations`
 
-- 原則読み取りは管理ロールのみ
-- 一般ユーザーは候補表示時の必要データをAPIで匿名化して返す（候補IDと非個人情報のみ）
+## partner 系テーブル
 
-### audit_logs
+- `partner_products`, `partner_stores` は Phase2 では「認証済みユーザーのみ select」。
+- insert/update/delete は未提供（MVPの安全側）
 
-- 一般ユーザー不可
-- 運用監査ロールのみ
-- ログ閲覧も監査者個人が個人情報を復元しない設計
+## audit_logs
 
-## 管理者ポリシー（暫定）
+- 初期ではクライアントから操作不可。
+- 将来は管理ジョブや監査権限を持つ別 role 経由で運用。
 
-- `app_admin`はメタ情報監査が主で、
-  - 原則、`meal_photos`の画像本体には直接アクセスしない
-  - 個人識別子を伴う食事履歴の一括取得を避ける
-- 例外時でも、データ匿名化レイヤを経由して参照
+## migration反映
 
-## 将来連携時の個人情報分離
+- `supabase/migrations/0001_initial_schema.sql` にて `enable row level security` と Policy をSQL化。
+- 各テーブルに対して `create policy if not exists` を付与。
 
-- 提携企業向けデータは以下を除外
-  - 氏名、メール、詳細履歴
-  - 生年月日、体重推移の識別できる履歴
-- 代替データ
-  - 年代別・時間帯別の匿名統計
-  - 併存フラグの匿名分布
+## 検証方針
 
-## SQL方針（草案）
-
-```sql
--- 例: meal_entries
-create policy "meal entries own select" on meal_entries
-  for select using (auth.uid() = user_id);
-
-create policy "meal entries own insert" on meal_entries
-  for insert with check (auth.uid() = user_id);
-
--- 例: meal_photos
-create policy "meal photos own access via meal" on meal_photos
-  for select using (
-    exists (
-      select 1 from meal_entries me
-      where me.id = meal_photos.meal_entry_id and me.user_id = auth.uid()
-    )
-  );
-```
-
-上記は実装前提であり、最終的なRLS名・ロールは認証基盤実装時に確定する。
+- `supabase/tests/rls_access_tests.sql` を使って主要シナリオを確認。
+  - user A が自分を読む/他ユーザーを読むと拒否
+  - user_goals の更新権限の本人限定
+  - partner/productsとaudit_logsの過剰権限拒否

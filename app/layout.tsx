@@ -1,14 +1,14 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import "./globals.css";
-import { AppHeader } from "../components/app-header";
-import { SafetyNotice } from "../components/safety-notice";
+import type { Metadata } from "next"
+import Link from "next/link"
+import "./globals.css"
+import AppHeader from "../components/app-header"
+import { SafetyNotice } from "../components/safety-notice"
 
 export const metadata: Metadata = {
   title: "パクフィット / PakuFit",
   description:
     "食事記録をサポートするアプリ。写真・テキストから候補を推定し、カロリー/PFCは概算として表示します。"
-};
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -20,7 +20,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
             <SafetyNotice />
             <p className="mt-3 text-xs text-slate-500">
-              本アプリは医療・診断・治療目的ではなく、一般的な食事管理の参考情報を提供します。
+              本アプリは個別健康判断・処方の提供を目的としていません。
+              一般的な食事管理の参考情報として使う想定です。
               <Link href="/safety" className="ml-1 underline underline-offset-2">
                 安全方針を見る
               </Link>
@@ -29,5 +30,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </footer>
       </body>
     </html>
-  );
+  )
 }

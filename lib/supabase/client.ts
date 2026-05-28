@@ -1,16 +1,8 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { env } from "../env";
+import { createBrowserClient } from '@supabase/ssr'
 
-let singleton: SupabaseClient | null = null;
+import { env } from '@/lib/env'
 
-export function getBrowserClient(): SupabaseClient | null {
-  if (!env.supabaseUrl || !env.supabaseAnonKey) {
-    return null;
-  }
+export const createClient = () =>
+  createBrowserClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
-  if (!singleton) {
-    singleton = createClient(env.supabaseUrl, env.supabaseAnonKey);
-  }
-
-  return singleton;
-}
+export const supabase = createClient()
