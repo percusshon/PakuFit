@@ -1,19 +1,31 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import Link from "next/link"
 import "./globals.css"
 import AppHeader from "../components/app-header"
 import { SafetyNotice } from "../components/safety-notice"
+import PwaRegister from "../components/pwa-register"
 
 export const metadata: Metadata = {
   title: "パクフィット / PakuFit",
   description:
-    "食事記録をサポートするアプリ。写真・テキストから候補を推定し、カロリー/PFCは概算として表示します。"
+    "食事記録をサポートするアプリ。写真・テキストから候補を推定し、カロリー/PFCは概算として表示します。",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "PakuFit"
+  }
+}
+
+export const viewport: Viewport = {
+  themeColor: "#2ea0c7"
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja">
       <body>
+        <PwaRegister />
         <AppHeader />
         <main className="min-h-[calc(100vh-96px)]">{children}</main>
         <footer className="border-t border-white/60 bg-white/80 py-6">
