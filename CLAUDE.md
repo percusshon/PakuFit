@@ -102,10 +102,12 @@ supabase test db    # DB/RLS（supabase start 後）
 - Phase 7: 次の食事候補履歴 MVP（保存・履歴表示）
 - Phase 7.5: 推薦保存フロー検証（重複保存抑制）
 - Phase 8: サマリー読み取りガイド MVP
+- 写真AI栄養概算（`lib/ai/`・`app/api/meals/estimate`・`components/meal-photo-estimator.tsx`）。モック既定 + Anthropic vision 差し替え可能（commit 438eaf5）。
+- PWA 基盤（`app/manifest.ts`・`app/icon.svg`・`public/icons/`・`public/sw.js`・`public/offline.html`・`components/pwa-register.tsx`）。インストール可能化 + ナビゲーション network-first + オフラインフォールバック（commit 3f2e496）。
 
 進行中 / 未確定:
 
-- 写真AI栄養概算（`lib/ai/`・`app/api/meals/estimate`・`components/meal-photo-estimator.tsx`）。モック既定 + 実 API 差し替え可能。**未コミット**（commit 指示待ち）。
+- （現在なし）
 
 未着手（ロードマップ）— いずれも外部 API・データソース・収益モデル等の方針決定が必要なため、独断で確定実装しない:
 
@@ -113,7 +115,7 @@ supabase test db    # DB/RLS（supabase start 後）
 - バーコード/JAN 読取・JAN 一致時の候補補完
 - コンビニ/スーパー商品DB 連携（在庫・価格・地域）
 - 提携/広告/収益化（透明性付き導線）
-- PWA / モバイル化（カメラ連携・オフライン）
+- PWA 高度化（カメラ連携・高度なオフライン対応）※インストール可能化・基本オフラインは実装済み
 
 ## 用語の徹底
 
