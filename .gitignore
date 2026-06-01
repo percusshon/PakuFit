@@ -47,6 +47,8 @@ temp/
 
 # Supabase / local infra
 .supabase/
+supabase/.branches/
+supabase/.temp/
 .vercel/
 .netlify/
 

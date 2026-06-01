@@ -24,6 +24,12 @@ const MAX_SALT_G = 50;
 const isMealType = (value: unknown): value is MealType =>
   typeof value === 'string' && (VALID_MEAL_TYPES as readonly string[]).includes(value);
 
+// 概算の取得経路。写真AI概算を反映した場合は 'photo'、それ以外は 'manual'。
+type IntakeMethod = 'manual' | 'photo';
+
+const toIntakeMethod = (value: FormDataEntryValue | null): IntakeMethod =>
+  value === 'photo' ? 'photo' : 'manual';
+
 const toOptionalTrimmedString = (value: FormDataEntryValue | null) => {
   const text = typeof value === 'string' ? value.trim() : '';
   return text.length > 0 ? text : null;
@@ -124,6 +130,7 @@ export async function createMealEntry(formData: FormData) {
     redirect(`/meals/new?error=${parsed}`);
   }
 
+  const intakeMethod = toIntakeMethod(formData.get('estimate_method'));
   const supabase = createServerClientSafe();
 
   const { data: mealEntryData, error: mealEntryError } = await supabase
@@ -139,7 +146,7 @@ export async function createMealEntry(formData: FormData) {
       preparation_note: parsed.preparation_note,
       meal_label: parsed.title,
       food_description: parsed.description,
-      intake_channel: 'manual',
+      intake_channel: intakeMethod,
       estimated_total_calories: parsed.estimated_calories,
     })
     .select('id')
@@ -167,7 +174,7 @@ export async function createMealEntry(formData: FormData) {
       estimated_carbs_g: parsed.estimated_carbs_g,
       estimated_fiber_g: parsed.estimated_fiber_g,
       estimated_salt_g: parsed.estimated_salt_g,
-      estimate_method: 'manual',
+      estimate_method: intakeMethod,
       is_user_confirmed: true,
     });
 

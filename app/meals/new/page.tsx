@@ -1,6 +1,7 @@
 import { createMealEntry } from '@/lib/meals/actions';
 import { requireAuthUser } from '@/lib/supabase/server';
 import { PageContainer } from '@/components/page-container';
+import { MealPhotoEstimator } from '@/components/meal-photo-estimator';
 
 const toDateTimeLocalValue = () => {
   const now = new Date();
@@ -24,8 +25,8 @@ export default async function NewMealPage({
     <PageContainer title="食事を記録する" description={`ログイン中: ${user.email ?? 'ユーザー'}`}>
       <div className="space-y-5">
         <p className="rounded-md border border-amber-200 bg-white p-4 text-sm text-amber-800">
-          写真アップロード、AI推定、バーコード連携は今後追加予定です。今は
-          「食事名」「概算カロリー」「概算PFC」を中心に記録し、後続の候補表示で活用します。
+          写真からのAI概算に対応しました（任意）。写真を選んで概算を取り込み、必要に応じて補正して保存できます。
+          バーコード連携は今後追加予定です。
         </p>
 
         {error === 'empty_title' && (
@@ -48,6 +49,10 @@ export default async function NewMealPage({
         )}
 
         <form action={createMealEntry} className="space-y-4 rounded-lg border border-amber-200 bg-white p-5">
+          <input type="hidden" id="estimate_method" name="estimate_method" defaultValue="manual" />
+
+          <MealPhotoEstimator />
+
           <label className="block text-sm font-medium text-amber-900" htmlFor="meal_type">
             食事区分
             <select
@@ -214,10 +219,6 @@ export default async function NewMealPage({
               className="mt-1 w-full rounded-md border border-amber-200 px-3 py-2"
             />
           </label>
-
-          <div className="rounded border border-dashed border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-            写真アップロード機能は現在未実装です。画像入力とAI推定は次ステップで追加予定です。
-          </div>
 
           <button
             type="submit"
