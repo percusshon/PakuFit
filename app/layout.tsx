@@ -26,6 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ja">
       <body>
         <PwaRegister />
+        <div className="bg-amber-100 px-4 py-2 text-center text-xs text-amber-900">
+          試用版（本運用前）です。データは予告なく削除される場合があります。栄養値は概算・目安で、医療目的ではありません。
+        </div>
         <AppHeader />
         <main className="min-h-[calc(100vh-96px)]">{children}</main>
         <footer className="border-t border-white/60 bg-white/80 py-6">
