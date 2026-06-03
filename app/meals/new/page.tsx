@@ -2,6 +2,7 @@ import { createMealEntry } from '@/lib/meals/actions';
 import { requireAuthUser } from '@/lib/supabase/server';
 import { PageContainer } from '@/components/page-container';
 import { MealPhotoEstimator } from '@/components/meal-photo-estimator';
+import { BarcodeScanner } from '@/components/barcode-scanner';
 
 const toDateTimeLocalValue = () => {
   const now = new Date();
@@ -26,7 +27,7 @@ export default async function NewMealPage({
       <div className="space-y-5">
         <p className="rounded-md border border-amber-200 bg-white p-4 text-sm text-amber-800">
           写真からのAI概算に対応しました（任意）。写真を選んで概算を取り込み、必要に応じて補正して保存できます。
-          バーコード連携は今後追加予定です。
+          対応端末ではバーコードからJANコードを読み取れます（商品データベース照合は今後対応予定）。
         </p>
 
         {error === 'empty_title' && (
@@ -52,6 +53,8 @@ export default async function NewMealPage({
           <input type="hidden" id="estimate_method" name="estimate_method" defaultValue="manual" />
 
           <MealPhotoEstimator />
+
+          <BarcodeScanner />
 
           <label className="block text-sm font-medium text-amber-900" htmlFor="meal_type">
             食事区分

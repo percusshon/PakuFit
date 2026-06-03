@@ -20,16 +20,27 @@ const setInputValue = (id: string, value: number | string) => {
 };
 
 export function MealPhotoEstimator() {
-  const fileRef = useRef<HTMLInputElement | null>(null);
+  const galleryRef = useRef<HTMLInputElement | null>(null);
+  const cameraRef = useRef<HTMLInputElement | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<MealPhotoEstimateResult | null>(null);
   const [applied, setApplied] = useState(false);
 
+  // 撮影/選択いずれの入力からも、選択された写真を一元管理する。
+  const handlePick = (input: HTMLInputElement | null) => {
+    const file = input?.files?.[0] ?? null;
+    setSelectedFile(file);
+    setResult(null);
+    setError(null);
+    setApplied(false);
+  };
+
   const handleEstimate = async () => {
     setError(null);
     setApplied(false);
-    const file = fileRef.current?.files?.[0];
+    const file = selectedFile;
     if (!file) {
       setError(ERROR_MESSAGES.no_photo);
       return;
@@ -88,22 +99,48 @@ export function MealPhotoEstimator() {
         </p>
       </div>
 
+      {/* カメラ撮影とライブラリ選択の2導線。モバイルでは撮影でリアカメラを直接起動する。 */}
       <input
-        ref={fileRef}
+        ref={cameraRef}
         type="file"
         accept="image/*"
-        className="block w-full text-sm text-amber-900 file:mr-3 file:rounded-full file:border-0 file:bg-amber-600 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white hover:file:bg-amber-700"
-        onChange={() => {
-          setResult(null);
-          setError(null);
-          setApplied(false);
-        }}
+        capture="environment"
+        className="hidden"
+        onChange={() => handlePick(cameraRef.current)}
       />
+      <input
+        ref={galleryRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={() => handlePick(galleryRef.current)}
+      />
+
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => cameraRef.current?.click()}
+          className="rounded-full border border-amber-600 px-4 py-1.5 text-sm font-semibold text-amber-700 hover:bg-amber-100"
+        >
+          カメラで撮影
+        </button>
+        <button
+          type="button"
+          onClick={() => galleryRef.current?.click()}
+          className="rounded-full border border-amber-600 px-4 py-1.5 text-sm font-semibold text-amber-700 hover:bg-amber-100"
+        >
+          ライブラリから選択
+        </button>
+      </div>
+
+      {selectedFile && (
+        <p className="truncate text-xs text-amber-800">選択中: {selectedFile.name}</p>
+      )}
 
       <button
         type="button"
         onClick={handleEstimate}
-        disabled={loading}
+        disabled={loading || !selectedFile}
         className="rounded-full border border-amber-600 px-4 py-1.5 text-sm font-semibold text-amber-700 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {loading ? 'AIが概算中…' : 'AIで概算する'}

@@ -10,7 +10,7 @@ export type MealNutritionEstimate = {
   salt_g: number;
 };
 
-export type VisionProvider = 'mock' | 'anthropic';
+export type VisionProvider = 'mock' | 'anthropic' | 'openai';
 
 export type MealPhotoEstimateResult = {
   provider: VisionProvider;

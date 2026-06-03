@@ -50,21 +50,32 @@ describe('estimateWithMock', () => {
 
 describe('estimateMealNutritionFromPhoto', () => {
   const originalProvider = process.env.PAKUFIT_VISION_PROVIDER;
-  const originalKey = process.env.ANTHROPIC_API_KEY;
+  const originalAnthropicKey = process.env.ANTHROPIC_API_KEY;
+  const originalOpenAiKey = process.env.OPENAI_API_KEY;
 
   beforeEach(() => {
     delete process.env.ANTHROPIC_API_KEY;
+    delete process.env.OPENAI_API_KEY;
     process.env.PAKUFIT_VISION_PROVIDER = 'mock';
   });
 
   afterEach(() => {
     if (originalProvider === undefined) delete process.env.PAKUFIT_VISION_PROVIDER;
     else process.env.PAKUFIT_VISION_PROVIDER = originalProvider;
-    if (originalKey === undefined) delete process.env.ANTHROPIC_API_KEY;
-    else process.env.ANTHROPIC_API_KEY = originalKey;
+    if (originalAnthropicKey === undefined) delete process.env.ANTHROPIC_API_KEY;
+    else process.env.ANTHROPIC_API_KEY = originalAnthropicKey;
+    if (originalOpenAiKey === undefined) delete process.env.OPENAI_API_KEY;
+    else process.env.OPENAI_API_KEY = originalOpenAiKey;
   });
 
   it('キー未設定・mock指定ならモック推定を返す', async () => {
+    const result = await estimateMealNutritionFromPhoto(sampleInput());
+    expect(result.provider).toBe('mock');
+    expect(result.isMock).toBe(true);
+  });
+
+  it('openai指定でもキー未設定ならモックにフォールバックする', async () => {
+    process.env.PAKUFIT_VISION_PROVIDER = 'openai';
     const result = await estimateMealNutritionFromPhoto(sampleInput());
     expect(result.provider).toBe('mock');
     expect(result.isMock).toBe(true);

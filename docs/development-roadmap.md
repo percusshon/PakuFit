@@ -31,13 +31,15 @@
 
 ## Phase 5: 写真AI連携
 
-> 状態: 概算機能の基盤を実装済み（モック既定 + Anthropic vision 差し替え可、commit 438eaf5）。実プロバイダの本確定（モデル/コスト/プライバシー方針）は未着手。
+> 状態: 概算機能の基盤を実装済み（モック既定 + 実プロバイダ差し替え可）。実プロバイダは OpenAI vision（既定 gpt-4o-mini）と Anthropic vision を選択可能（`PAKUFIT_VISION_PROVIDER` / `OPENAI_API_KEY` / `ANTHROPIC_API_KEY`、未指定はキーの有無で自動判定・OpenAI優先、失敗時はモックfallback）。コスト/プライバシー方針の最終確定・精度ログ観測は継続課題。
 
 - 画像解析サービス接続（設計外部API）
 - 推定精度ログと補正率の観測
 - 品質が低いケースで補正導線最適化
 
 ## Phase 6: バーコード/JANコード
+
+> 状態: ブラウザ標準 `BarcodeDetector` のみで JAN(EAN-13/8 等) 読取UIを実装済み（`components/barcode-scanner.tsx`、未対応端末は機能非表示で案内のみ、外部ライブラリ不使用）。読み取ったJANは食事名へ反映できる。商品DB照合（JAN一致時の候補自動補完）は外部データソース/契約が必要なため未着手。
 
 - 条件分岐で手入力/バーコード入力を共存
 - JAN一致時の候補自動補完
@@ -54,7 +56,7 @@
 
 ## Phase 9: モバイルアプリ化
 
-> 状態: PWA 基盤を実装済み（manifest/icon/SW・インストール可能化・オフラインフォールバック、commit 3f2e496）。カメラ連携最適化・高度なオフライン対応は未着手。
+> 状態: PWA 基盤を実装済み（manifest/icon/SW・インストール可能化・オフラインフォールバック、commit 3f2e496）。追加で PNG アイコン（192/512・maskable・apple-touch-icon=`app/apple-icon.png`）整備、写真入力にカメラ直接撮影導線を追加済み。高度なオフライン対応は未着手。
 
 - PWA/ネイティブ移行検討
 - カメラ連携最適化
