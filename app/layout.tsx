@@ -34,10 +34,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <p className="mt-3 text-xs text-slate-500">
               本アプリは個別健康判断・処方の提供を目的としていません。
               一般的な食事管理の参考情報として使う想定です。
-              <Link href="/safety" className="ml-1 underline underline-offset-2">
-                安全方針を見る
-              </Link>
             </p>
+            <nav className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+              <Link href="/safety" className="underline underline-offset-2">
+                安全方針
+              </Link>
+              <Link href="/privacy" className="underline underline-offset-2">
+                プライバシーポリシー
+              </Link>
+              <Link href="/terms" className="underline underline-offset-2">
+                利用規約
+              </Link>
+            </nav>
           </div>
         </footer>
       </body>
