@@ -35,14 +35,20 @@ export async function POST(request: NextRequest) {
   const hintValue = formData.get('hint');
   const hint = typeof hintValue === 'string' ? hintValue : null;
 
+  // 外部AIサービスへの送信は明示同意（opt-in）があるときだけ許可する。
+  const allowExternal = formData.get('external_ai_consent') === 'true';
+
   try {
     const bytes = new Uint8Array(await photo.arrayBuffer());
-    const result = await estimateMealNutritionFromPhoto({
-      bytes,
-      mediaType: photo.type || 'image/jpeg',
-      filename: photo.name || null,
-      hint,
-    });
+    const result = await estimateMealNutritionFromPhoto(
+      {
+        bytes,
+        mediaType: photo.type || 'image/jpeg',
+        filename: photo.name || null,
+        hint,
+      },
+      { allowExternal },
+    );
 
     return NextResponse.json(result);
   } catch {

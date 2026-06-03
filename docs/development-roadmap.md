@@ -31,7 +31,7 @@
 
 ## Phase 5: 写真AI連携
 
-> 状態: 概算機能の基盤を実装済み（モック既定 + 実プロバイダ差し替え可）。実プロバイダは OpenAI vision（既定 gpt-4o-mini）と Anthropic vision を選択可能（`PAKUFIT_VISION_PROVIDER` / `OPENAI_API_KEY` / `ANTHROPIC_API_KEY`、未指定はキーの有無で自動判定・OpenAI優先、失敗時はモックfallback）。精度ログ観測の土台として、写真AI概算を反映した保存時に AI元概算と最終保存値を `photo_estimate_logs`（RLS本人のみ・追記専用、migration 0006）へ記録する（補正率の観測が可能）。コスト/プライバシー方針の最終確定、観測値の集計・可視化は継続課題。
+> 状態: 概算機能の基盤を実装済み（モック既定 + 実プロバイダ差し替え可）。実プロバイダは OpenAI vision（既定 gpt-4o-mini）と Anthropic vision を選択可能（`PAKUFIT_VISION_PROVIDER` / `OPENAI_API_KEY` / `ANTHROPIC_API_KEY`、未指定はキーの有無で自動判定・OpenAI優先、失敗時はモックfallback）。精度ログ観測の土台として、写真AI概算を反映した保存時に AI元概算と最終保存値を `photo_estimate_logs`（RLS本人のみ・追記専用、migration 0006）へ記録する（補正率の観測が可能）。外部送信は明示オプトイン（同意ONのときだけ送信・サーバ側強制、未同意はモック）で、プライバシー文言（総称「外部AIサービス」/保持・学習は規約参照/画像非保存）を `/privacy` に反映済み。コストの最終確定・送信先規約の確認・法務レビュー、観測値の集計（`scripts/estimate-accuracy.sql`）の可視化は継続課題。
 
 - 画像解析サービス接続（設計外部API）
 - 推定精度ログと補正率の観測

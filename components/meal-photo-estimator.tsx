@@ -1,8 +1,11 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { MealPhotoEstimateResult } from '@/lib/ai/vision-types';
+
+// 外部AIサービスへの写真送信に対するオプトイン同意の保存キー（端末ローカル）。
+const CONSENT_KEY = 'pakufit:external-ai-consent';
 
 const ERROR_MESSAGES: Record<string, string> = {
   unauthorized: 'ログインが必要です。',
@@ -27,6 +30,25 @@ export function MealPhotoEstimator() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<MealPhotoEstimateResult | null>(null);
   const [applied, setApplied] = useState(false);
+  const [consent, setConsent] = useState(false);
+
+  // 同意状態は端末ローカルに記憶し、次回以降も引き継ぐ。
+  useEffect(() => {
+    try {
+      setConsent(window.localStorage.getItem(CONSENT_KEY) === 'true');
+    } catch {
+      // localStorage 不可な環境では同意なし扱い（外部送信しない）。
+    }
+  }, []);
+
+  const handleConsentChange = (next: boolean) => {
+    setConsent(next);
+    try {
+      window.localStorage.setItem(CONSENT_KEY, next ? 'true' : 'false');
+    } catch {
+      // 保存失敗は致命的ではない。
+    }
+  };
 
   // 撮影/選択いずれの入力からも、選択された写真を一元管理する。
   const handlePick = (input: HTMLInputElement | null) => {
@@ -50,6 +72,8 @@ export function MealPhotoEstimator() {
     const formData = new FormData();
     formData.append('photo', file);
     if (titleEl?.value) formData.append('hint', titleEl.value);
+    // 同意があるときだけ外部送信を許可する（サーバ側でも強制）。
+    formData.append('external_ai_consent', consent ? 'true' : 'false');
 
     setLoading(true);
     try {
@@ -120,6 +144,22 @@ export function MealPhotoEstimator() {
           料理写真を選ぶと、カロリー/PFCの概算を自動入力できます。値は概算なので保存前に確認・補正してください。
         </p>
       </div>
+
+      {/* 外部AIサービスへの送信はオプトイン。未同意ならローカル簡易推定（モック）になる。 */}
+      <label className="flex items-start gap-2 rounded-md border border-amber-200 bg-white p-2 text-xs text-amber-900">
+        <input
+          type="checkbox"
+          checked={consent}
+          onChange={(e) => handleConsentChange(e.target.checked)}
+          className="mt-0.5"
+        />
+        <span>
+          外部AIサービスへの送信に同意する。
+          <span className="block text-amber-700">
+            同意すると、概算のときだけ料理写真が外部AIサービスに送信されます。画像はアプリには保存されません。送信先での取り扱いは各サービスの規約に従います。未同意の場合はローカルの簡易推定（モック）になります。
+          </span>
+        </span>
+      </label>
 
       {/* カメラ撮影とライブラリ選択の2導線。モバイルでは撮影でリアカメラを直接起動する。 */}
       <input

@@ -104,6 +104,7 @@ supabase test db    # DB/RLS（supabase start 後）
 - Phase 8: サマリー読み取りガイド MVP
 - 写真AI栄養概算（`lib/ai/`・`app/api/meals/estimate`・`components/meal-photo-estimator.tsx`）。モック既定 + 実プロバイダ差し替え可能。実プロバイダは OpenAI vision（既定 `gpt-4o-mini`）/ Anthropic vision を選択可（`PAKUFIT_VISION_PROVIDER`=mock|openai|anthropic、未指定はキーの有無で自動判定・OpenAI優先、失敗時モックfallback）。SDK不使用・fetchのみ。
 - バーコード/JAN 読取（`components/barcode-scanner.tsx`）。ブラウザ標準 `BarcodeDetector` のみ（外部ライブラリ・商品DB照合なし）。未対応端末は機能非表示。読み取ったJANは食事名へ反映可。`/meals/new` に統合。
+- 写真AI 外部送信のオプトイン同意。`components/meal-photo-estimator.tsx` の同意チェック（端末localStorage記憶）が ON のときだけ外部AIサービスへ送信。未同意はローカルのモック推定。サーバ側でも `app/api/meals/estimate/route.ts` → `lib/ai/estimate-meal-nutrition.ts` の `allowExternal` で強制。プライバシー文言は `/privacy` に反映（送信先は総称「外部AIサービス」、保持/学習は断定せず規約参照、画像はアプリ非保存）。方針記録は `docs/photo-ai-privacy-draft.md`。
 - 写真AI 精度ログ観測（`photo_estimate_logs`、migration 0006）。写真AI概算を反映して保存した時に AI元概算と最終保存値（補正後）を本人のみ(RLS)・追記専用で記録。反映時点の元概算はフォームの hidden フィールドで送信し、`lib/meals/actions.ts` が best-effort で記録（失敗しても保存は止めない）。RLS テストは `supabase/tests/rls_access_tests.sql`（plan 35）。
 - PWA 基盤（`app/manifest.ts`・`app/icon.svg`・`public/icons/`・`public/sw.js`・`public/offline.html`・`components/pwa-register.tsx`）。インストール可能化 + ナビゲーション network-first + オフラインフォールバック（commit 3f2e496）。追加で PNG アイコン（`public/icons/icon-192.png`・`icon-512.png`・`maskable-512.png`、apple-touch-icon=`app/apple-icon.png`、macOS `qlmanage`+`sips` で SVG から生成・依存追加なし）と写真入力のカメラ直接撮影導線を追加。
 
