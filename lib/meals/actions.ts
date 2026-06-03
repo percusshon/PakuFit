@@ -35,6 +35,35 @@ const toOptionalTrimmedString = (value: FormDataEntryValue | null) => {
   return text.length > 0 ? text : null;
 };
 
+// 精度ログ用の許容プロバイダ。
+const AI_LOG_PROVIDERS = ['mock', 'openai', 'anthropic'] as const;
+type AiLogProvider = (typeof AI_LOG_PROVIDERS)[number];
+
+const toFiniteNumberOrNull = (value: FormDataEntryValue | null) => {
+  if (typeof value !== 'string' || value.trim().length === 0) return null;
+  const parsed = Number(value.trim());
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+// 写真AI概算を反映して保存した場合の精度ログ入力。反映していなければ null。
+const parseAiEstimateLog = (formData: FormData) => {
+  const provider = formData.get('ai_provider');
+  if (typeof provider !== 'string' || !(AI_LOG_PROVIDERS as readonly string[]).includes(provider)) {
+    return null;
+  }
+  return {
+    provider: provider as AiLogProvider,
+    confidence: toFiniteNumberOrNull(formData.get('ai_confidence')),
+    guessed_label: toOptionalTrimmedString(formData.get('ai_guessed_label')),
+    ai_calories: toFiniteNumberOrNull(formData.get('ai_estimated_calories')),
+    ai_protein_g: toFiniteNumberOrNull(formData.get('ai_estimated_protein_g')),
+    ai_fat_g: toFiniteNumberOrNull(formData.get('ai_estimated_fat_g')),
+    ai_carbs_g: toFiniteNumberOrNull(formData.get('ai_estimated_carbs_g')),
+    ai_fiber_g: toFiniteNumberOrNull(formData.get('ai_estimated_fiber_g')),
+    ai_salt_g: toFiniteNumberOrNull(formData.get('ai_estimated_salt_g')),
+  };
+};
+
 const toPositiveIntOrNull = (value: FormDataEntryValue | null) => {
   if (typeof value !== 'string' || value.trim().length === 0) return null;
   const normalized = value.trim();
@@ -180,6 +209,35 @@ export async function createMealEntry(formData: FormData) {
 
     if (nutritionError) {
       redirect('/meals/new?error=save_failed');
+    }
+  }
+
+  // 写真AI概算を反映した保存なら、精度観測ログを追記する。
+  // 付帯情報のため、失敗しても保存自体（リダイレクト）は止めない（best-effort）。
+  const aiLog = parseAiEstimateLog(formData);
+  if (aiLog) {
+    const { error: logError } = await supabase.from('photo_estimate_logs').insert({
+      user_id: user.id,
+      meal_entry_id: mealEntryData.id,
+      provider: aiLog.provider,
+      guessed_label: aiLog.guessed_label,
+      confidence: aiLog.confidence,
+      ai_calories: aiLog.ai_calories,
+      ai_protein_g: aiLog.ai_protein_g,
+      ai_fat_g: aiLog.ai_fat_g,
+      ai_carbs_g: aiLog.ai_carbs_g,
+      ai_fiber_g: aiLog.ai_fiber_g,
+      ai_salt_g: aiLog.ai_salt_g,
+      final_calories: parsed.estimated_calories,
+      final_protein_g: parsed.estimated_protein_g,
+      final_fat_g: parsed.estimated_fat_g,
+      final_carbs_g: parsed.estimated_carbs_g,
+      final_fiber_g: parsed.estimated_fiber_g,
+      final_salt_g: parsed.estimated_salt_g,
+    });
+
+    if (logError && process.env.NODE_ENV !== 'production') {
+      console.warn('PakuFit: photo_estimate_logs insert failed ->', logError);
     }
   }
 

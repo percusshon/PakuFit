@@ -104,6 +104,7 @@ supabase test db    # DB/RLS（supabase start 後）
 - Phase 8: サマリー読み取りガイド MVP
 - 写真AI栄養概算（`lib/ai/`・`app/api/meals/estimate`・`components/meal-photo-estimator.tsx`）。モック既定 + 実プロバイダ差し替え可能。実プロバイダは OpenAI vision（既定 `gpt-4o-mini`）/ Anthropic vision を選択可（`PAKUFIT_VISION_PROVIDER`=mock|openai|anthropic、未指定はキーの有無で自動判定・OpenAI優先、失敗時モックfallback）。SDK不使用・fetchのみ。
 - バーコード/JAN 読取（`components/barcode-scanner.tsx`）。ブラウザ標準 `BarcodeDetector` のみ（外部ライブラリ・商品DB照合なし）。未対応端末は機能非表示。読み取ったJANは食事名へ反映可。`/meals/new` に統合。
+- 写真AI 精度ログ観測（`photo_estimate_logs`、migration 0006）。写真AI概算を反映して保存した時に AI元概算と最終保存値（補正後）を本人のみ(RLS)・追記専用で記録。反映時点の元概算はフォームの hidden フィールドで送信し、`lib/meals/actions.ts` が best-effort で記録（失敗しても保存は止めない）。RLS テストは `supabase/tests/rls_access_tests.sql`（plan 35）。
 - PWA 基盤（`app/manifest.ts`・`app/icon.svg`・`public/icons/`・`public/sw.js`・`public/offline.html`・`components/pwa-register.tsx`）。インストール可能化 + ナビゲーション network-first + オフラインフォールバック（commit 3f2e496）。追加で PNG アイコン（`public/icons/icon-192.png`・`icon-512.png`・`maskable-512.png`、apple-touch-icon=`app/apple-icon.png`、macOS `qlmanage`+`sips` で SVG から生成・依存追加なし）と写真入力のカメラ直接撮影導線を追加。
 
 進行中 / 未確定:
@@ -112,7 +113,7 @@ supabase test db    # DB/RLS（supabase start 後）
 
 未着手（ロードマップ）— いずれも外部 API・データソース・収益モデル等の方針決定が必要なため、独断で確定実装しない:
 
-- 写真AI 実プロバイダの最終確定（コスト/プライバシー方針・精度ログ観測）※OpenAI/Anthropic 接続自体は実装済み
+- 写真AI 実プロバイダの最終確定（コスト/プライバシー方針）と精度ログの集計・可視化 ※OpenAI/Anthropic 接続と精度ログ記録(`photo_estimate_logs`)は実装済み
 - コンビニ/スーパー商品DB 連携（在庫・価格・地域）＝バーコードのJAN一致候補補完もこれ依存
 - 提携/広告/収益化（透明性付き導線）
 - PWA 高度化（高度なオフライン対応）※インストール可能化・基本オフライン・カメラ撮影導線・PNGアイコンは実装済み

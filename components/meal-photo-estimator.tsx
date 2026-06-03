@@ -81,6 +81,17 @@ export function MealPhotoEstimator() {
     setInputValue('estimated_salt_g', nutrition.salt_g);
     setInputValue('estimate_method', 'photo');
 
+    // 精度ログ観測用に、反映時点のAI元概算を hidden フィールドへ保持する。
+    setInputValue('ai_provider', result.provider);
+    setInputValue('ai_confidence', result.confidence);
+    setInputValue('ai_guessed_label', result.guessedLabel ?? '');
+    setInputValue('ai_estimated_calories', nutrition.calories);
+    setInputValue('ai_estimated_protein_g', nutrition.protein_g);
+    setInputValue('ai_estimated_fat_g', nutrition.fat_g);
+    setInputValue('ai_estimated_carbs_g', nutrition.carbs_g);
+    setInputValue('ai_estimated_fiber_g', nutrition.fiber_g);
+    setInputValue('ai_estimated_salt_g', nutrition.salt_g);
+
     // 食事名が空ならラベルを補完（あくまで概算の参考）。
     const titleEl = document.getElementById('title') as HTMLInputElement | null;
     if (titleEl && !titleEl.value && result.guessedLabel) {
@@ -92,6 +103,17 @@ export function MealPhotoEstimator() {
 
   return (
     <div className="space-y-3 rounded-md border border-dashed border-amber-300 bg-amber-50 p-4">
+      {/* 精度ログ観測用の hidden フィールド（反映時点のAI元概算を保持してサーバへ送る）。 */}
+      <input type="hidden" id="ai_provider" name="ai_provider" defaultValue="" />
+      <input type="hidden" id="ai_confidence" name="ai_confidence" defaultValue="" />
+      <input type="hidden" id="ai_guessed_label" name="ai_guessed_label" defaultValue="" />
+      <input type="hidden" id="ai_estimated_calories" name="ai_estimated_calories" defaultValue="" />
+      <input type="hidden" id="ai_estimated_protein_g" name="ai_estimated_protein_g" defaultValue="" />
+      <input type="hidden" id="ai_estimated_fat_g" name="ai_estimated_fat_g" defaultValue="" />
+      <input type="hidden" id="ai_estimated_carbs_g" name="ai_estimated_carbs_g" defaultValue="" />
+      <input type="hidden" id="ai_estimated_fiber_g" name="ai_estimated_fiber_g" defaultValue="" />
+      <input type="hidden" id="ai_estimated_salt_g" name="ai_estimated_salt_g" defaultValue="" />
+
       <div>
         <p className="text-sm font-semibold text-amber-900">写真からAI概算（任意）</p>
         <p className="mt-1 text-xs text-amber-800">

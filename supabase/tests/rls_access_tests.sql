@@ -46,6 +46,12 @@ VALUES
   ('00000000-0000-0000-0000-000000000102', :'USER_B_ID'::uuid, '11111111-1111-1111-1111-111111111102', 'manual', 670, 32, 24, 74, 4.2, 1.8)
 ON CONFLICT (id) DO NOTHING;
 
+INSERT INTO public.photo_estimate_logs (id, user_id, meal_entry_id, provider, confidence, ai_calories, final_calories)
+VALUES
+  ('00000000-0000-0000-0000-000000000301', :'USER_A_ID'::uuid, '11111111-1111-1111-1111-111111111101', 'openai', 0.70, 600, 650),
+  ('00000000-0000-0000-0000-000000000302', :'USER_B_ID'::uuid, '11111111-1111-1111-1111-111111111102', 'mock', 0.50, 700, 680)
+ON CONFLICT (id) DO NOTHING;
+
 INSERT INTO public.user_goals (user_id, goal_category, target_calories_per_day, target_protein_g, target_fat_g, target_carbs_g)
 VALUES
   (:'USER_A_ID'::uuid, 'weight_management', 1800, 95, 55, 210),
@@ -121,7 +127,7 @@ VALUES
   ('00000000-0000-0000-0000-000000000031', :'USER_A_ID'::uuid, 'seed', 'meal_entries', '11111111-1111-1111-1111-111111111101'::uuid, '{"source":"seed"}'::jsonb)
 ON CONFLICT (id) DO NOTHING;
 
-select plan(28);
+select plan(35);
 
 select public.set_test_jwt(:'USER_A_ID'::uuid);
 set role authenticated;
@@ -446,5 +452,73 @@ select is(
   'user A はuser Bのmeal_recommendationsをdeleteできない'
 );
 set role authenticated;
+
+-- 28) user A は自分のphoto_estimate_logsを読める
+select is(
+  (select count(*)::int from public.photo_estimate_logs where user_id = :'USER_A_ID'::uuid),
+  1,
+  'user A は自分のphoto_estimate_logsを読める'
+);
+
+-- 29) user A はuser Bのphoto_estimate_logsを読めない
+select is(
+  (select count(*)::int from public.photo_estimate_logs where user_id = :'USER_B_ID'::uuid),
+  0,
+  'user A はuser Bのphoto_estimate_logsを読めない'
+);
+
+-- 30) user A は自分のphoto_estimate_logsをinsertできる
+insert into public.photo_estimate_logs (id, user_id, meal_entry_id, provider, confidence, ai_calories, final_calories)
+values ('00000000-0000-0000-0000-000000000303', :'USER_A_ID'::uuid, '11111111-1111-1111-1111-111111111101', 'anthropic', 0.40, 500, 520);
+select is(
+  (select count(*)::int from public.photo_estimate_logs where id = '00000000-0000-0000-0000-000000000303'),
+  1,
+  'user A はphoto_estimate_logsをinsertできる'
+);
+
+-- 31) user A はuser Bのphoto_estimate_logsをinsertできない
+do $$
+begin
+  begin
+    insert into public.photo_estimate_logs (id, user_id, meal_entry_id, provider, ai_calories)
+      values ('00000000-0000-0000-0000-000000000304', '00000000-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111102', 'mock', 300);
+  exception
+    when insufficient_privilege then
+      null;
+  end;
+end $$;
+select is(
+  (select count(*)::int from public.photo_estimate_logs where id = '00000000-0000-0000-0000-000000000304'::uuid),
+  0,
+  'user A はuser Bのphoto_estimate_logsをinsertできない'
+);
+
+-- 32) user A はuser Bのphoto_estimate_logsをdeleteできない
+delete from public.photo_estimate_logs
+where id = '00000000-0000-0000-0000-000000000302';
+set role postgres;
+select is(
+  (select count(*)::int from public.photo_estimate_logs where id = '00000000-0000-0000-0000-000000000302'),
+  1,
+  'user A はuser Bのphoto_estimate_logsをdeleteできない'
+);
+set role authenticated;
+
+-- 33) user A は自分のphoto_estimate_logsをdeleteできる
+delete from public.photo_estimate_logs
+where id = '00000000-0000-0000-0000-000000000303';
+select is(
+  (select count(*)::int from public.photo_estimate_logs where id = '00000000-0000-0000-0000-000000000303'),
+  0,
+  'user A は自分のphoto_estimate_logsをdeleteできる'
+);
+
+-- 34) photo_estimate_logs は provider 制約を満たさない値を拒否する
+select throws_ok(
+  $$insert into public.photo_estimate_logs (user_id, provider) values ('00000000-0000-0000-0000-000000000001', 'gemini');$$,
+  23514,
+  null,
+  'photo_estimate_logs は許可外providerを拒否する'
+);
 
 select * from finish();
