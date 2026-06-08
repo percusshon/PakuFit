@@ -156,6 +156,13 @@ export default async function LoginPage({
           <span className="font-medium"> 次の食事候補</span>を参考として確認できます。
         </p>
         <SafetyNotice className="text-sm" />
+        <p className="text-sm text-sky-700">
+          まずは登録せずに試したい方は{' '}
+          <Link href="/demo" className="font-semibold text-sky-700 underline underline-offset-4">
+            ログイン不要のデモ
+          </Link>
+          をご覧いただけます。
+        </p>
         <p className="text-sm text-amber-700">
           <Link href="/" className="text-amber-700 underline underline-offset-4">
             ホームへ戻る

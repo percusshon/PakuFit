@@ -8,6 +8,19 @@ export default function HomePage() {
       title="パクフィット / PakuFit"
       description="食事記録をサポートするための初期MVPです。写真・テキスト入力を使ってカロリー/PFCを概算し、次の食事候補を出すことを目指しています。"
     >
+      <div className="rounded-lg border border-sky-200 bg-sky-50 p-4">
+        <p className="text-sm font-semibold text-sky-900">ログイン不要のデモを公開中</p>
+        <p className="mt-1 text-sm text-sky-800">
+          アカウント登録なしで主要画面（食事記録・サマリー・次の食事候補）をサンプルデータで確認できます。
+        </p>
+        <Link
+          href="/demo"
+          className="mt-3 inline-block rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
+        >
+          デモを見る（ログイン不要）
+        </Link>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2">
         <FeatureCard
           title="食事記録"

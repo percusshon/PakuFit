@@ -17,6 +17,9 @@ export default async function AppHeader() {
           <Link href="/" className="text-amber-800 hover:text-amber-900">
             ホーム
           </Link>
+          <Link href="/demo" className="text-sky-700 hover:text-sky-900">
+            デモ
+          </Link>
           {user ? (
             <>
               <span className="text-amber-700">ログイン中: {user.email ?? 'ユーザー'}</span>
